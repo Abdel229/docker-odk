@@ -2,78 +2,72 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Http\Request;
-use App\Models\User;
+use App\Helper;
+use App\Models\AdminSettings;
+use App\Models\PaymentGateways;
 use App\Models\Plans;
 use App\Models\Subscriptions;
-use App\Models\AdminSettings;
-use App\Models\Withdrawals;
-use App\Models\Notifications;
-use App\Models\Transactions;
-use Fahim\PaypalIPN\PaypalIPNListener;
-use App\Helper;
-use Mail;
-use Carbon\Carbon;
+use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-use App\Models\PaymentGateways;
-use Image;
+use App\Services\cinetpay\CinetPayService;
 
 
 class SubscriptionsController extends Controller
 {
-  use Traits\Functions;
+    use Traits\Functions;
 
-  public function __construct(Request $request, AdminSettings $settings) {
-    $this->request = $request;
-    $this->settings = $settings::first();
-  }
+    public function __construct(Request $request, AdminSettings $settings)
+    {
+        $this->request = $request;
+        $this->settings = $settings::first();
+    }
 
-  /**
-	 * Buy subscription
-	 *
-	 * @return Response
-	 */
-  public function buy()
-  {
-    // Find the User
-    $user = User::whereVerifiedId('yes')
-        ->whereId($this->request->id)
-        ->where('id', '<>', auth()->id())
-        ->firstOrFail();
+    /**
+     * Buy subscription
+     *
+     * @return Response
+     */
+    public function buy()
+    {
+        // Find the User
+        $user = User::whereVerifiedId('yes')
+            ->whereId($this->request->id)
+            ->where('id', '<>', auth()->id())
+            ->firstOrFail();
 
         // Check if Plan exists
         $plan = $user->plans()
-        ->whereInterval($this->request->interval)
-        ->firstOrFail();
+            ->whereInterval($this->request->interval)
+            ->firstOrFail();
 
-        if (! $plan->status) {
-          return response()->json([
-              'success' => false,
-              'errors' => ['error' => trans('general.subscription_not_available')],
-          ]);
+        if (!$plan->status) {
+            return response()->json([
+                'success' => false,
+                'errors' => ['error' => trans('general.subscription_not_available')],
+            ]);
         }
 
-    // Check if subscription exists
-    $checkSubscription = auth()->user()->mySubscriptions()
-      ->whereStripePrice($plan->name)
-        ->where('ends_at', '>=', now())->first();
+        // Check if subscription exists
+        $checkSubscription = auth()->user()->mySubscriptions()
+            ->whereStripePrice($plan->name)
+            ->where('ends_at', '>=', now())->first();
 
-    if ($checkSubscription) {
-      return response()->json([
-          'success' => false,
-          'errors' => ['error' => trans('general.subscription_exists')],
-      ]);
-    }
+        if ($checkSubscription) {
+            return response()->json([
+                'success' => false,
+                'errors' => ['error' => trans('general.subscription_exists')],
+            ]);
+        }
 
-  //<---- Validation
-  $validator = Validator::make($this->request->all(), [
-      'payment_gateway' => 'required',
-      'payment_gateway' => 'required',
-      'agree_terms' => 'required',
-      ]);
+        //<---- Validation
+        $validator = Validator::make($this->request->all(), [
+            'payment_gateway' => 'required',
+            'payment_gateway' => 'required',
+            'agree_terms' => 'required',
+        ]);
 
-    if ($validator->fails()) {
+        if ($validator->fails()) {
             return response()->json([
                 'success' => false,
                 'errors' => $validator->getMessageBag()->toArray(),
@@ -82,7 +76,9 @@ class SubscriptionsController extends Controller
 
         // Wallet
         if ($this->request->payment_gateway == 'wallet') {
-          return $this->sendWallet();
+            return $this->sendWallet();
+        }else if ($this->request->payment_gateway == '11') {
+            return $this->sendCinetPay($plan);
         }
 
         // Get name of Payment Gateway
@@ -91,169 +87,210 @@ class SubscriptionsController extends Controller
         // Send data to the payment processor
         return redirect()->route(str_slug($payment->name), $this->request->except(['_token']));
 
-  }// End Method Send
+    }// End Method Send
 
-  /**
-	 * Free subscription
-	 *
-   */
-  public function subscriptionFree()
-  {
-    // Find user
-    $creator = User::whereId($this->request->id)
-        ->whereFreeSubscription('yes')
-        ->whereVerifiedId('yes')
-          ->firstOrFail();
+    /**
+     *  Subscription via Wallet
+     *
+     * @return Response
+     */
+    protected function sendWallet()
+    {
+      // Find user
+      $creator = User::whereId($this->request->id)
+          ->whereVerifiedId('yes')
+            ->firstOrFail();
 
-    // Verify plan no is empty
-    if (! $creator->plan) {
-       $creator->plan = 'user_'.$creator->id;
-       $creator->save();
-    }
+      // Check if Plan exists
+      $plan = $creator->plans()
+        ->whereInterval($this->request->interval)
+           ->firstOrFail();
 
-    // Check if not plans
-    if ($creator->plans()->count() == 0) {
+      $amount = $plan->price;
 
-        Plans::updateOrCreate(
-          [
-            'user_id' => $creator->id,
-            'name' => 'user_'.$creator->id
-          ],
-         [
-           'interval' => 'monthly',
-           'status' => '1'
-        ]);
-    }
+      // Verify plan no is empty
+      if (! $creator->plan) {
+         $creator->plan = 'user_'.$creator->id;
+         $creator->save();
+      }
 
-    // Verify subscription exists
-    $subscription = Subscriptions::whereUserId(auth()->id())
-        ->whereStripePrice($creator->plan)
-          ->whereFree('yes')
-            ->first();
-
-      if ($subscription) {
+      if (auth()->user()->wallet < Helper::amountGross($amount)) {
         return response()->json([
-          'success' => false,
-          'error' => trans('general.subscription_exists'),
+          "success" => false,
+          "errors" => ['error' => __('general.not_enough_funds')]
         ]);
       }
 
-    // Insert DB
-    $sql          = new Subscriptions();
-    $sql->user_id = auth()->id();
-    $sql->stripe_price = $creator->plan;
-    $sql->free = 'yes';
-    $sql->save();
+      // Insert DB
+      $subscription              = new Subscriptions();
+      $subscription->user_id     = auth()->id();
+      $subscription->stripe_price = $plan->name;
+      $subscription->ends_at     = $creator->planInterval($plan->interval);
+      $subscription->rebill_wallet = 'on';
+      $subscription->interval = $plan->interval;
+      $subscription->taxes = auth()->user()->taxesPayable();
+      $subscription->save();
 
-    // Send Email to User and Notification
-    Subscriptions::sendEmailAndNotify(auth()->user()->name, $creator->id);
+      // Admin and user earnings calculation
+      $earnings = $this->earningsAdminUser($creator->custom_fee, $amount, null, null);
 
-    return response()->json([
-      'success' => true,
-    ]);
-  } // End Method SubscriptionFree
+      // Insert Transaction
+      $this->transaction(
+         'subw_'.str_random(25),
+         auth()->id(),
+         $subscription->id,
+         $creator->id,
+         $amount,
+         $earnings['user'],
+         $earnings['admin'],
+         'Wallet',
+         'subscription',
+         $earnings['percentageApplied'],
+         auth()->user()->taxesPayable()
+       );
 
-  public function cancelFreeSubscription($id)
-  {
-    $checkSubscription = auth()->user()->userSubscriptions()->whereId($id)->firstOrFail();
-    $creator = User::wherePlan($checkSubscription->stripe_price)->first();
+      // Subtract user funds
+      auth()->user()->decrement('wallet', Helper::amountGross($amount));
 
-    // Delete Subscription
-    $checkSubscription->delete();
+      // Add Earnings to User
+      $creator->increment('balance', $earnings['user']);
 
-    session()->put('subscription_cancel', trans('general.subscription_cancel'));
-    return redirect($creator->username);
+      // Send Email to User and Notification
+      Subscriptions::sendEmailAndNotify(auth()->user()->name, $creator->id);
 
-  }// End Method cancelFreeSubscription
+      return response()->json([
+        'success' => true,
+        'url' => url('buy/subscription/success', $creator->username)
+      ]);
 
-  public function cancelWalletSubscription($id)
-  {
-    $subscription = auth()->user()->userSubscriptions()->whereId($id)->firstOrFail();
-    $creator = Plans::whereName($subscription->stripe_price)->first();
+    } // End sendTipWallet
 
-    // Delete Subscription
-    $subscription->cancelled = 'yes';
-    $subscription->save();
 
-    session()->put('subscription_cancel', trans('general.subscription_cancel'));
-    return redirect($creator->user()->username);
+    /**
+     *  Subscription via cinetpay
+     *
+     * @return Response
+     */
+    private function sendCinetPay(Plans $plan)
+    {
+        $data = [];
+        $data["customer_name"] = auth()->user()->name;
+        $data["customer_surname"] = auth()->user()->username;
+        $data["description"] = "Achat sdk";
+        $data["amount"] = $plan->price*100;
+        $data["type_operation"] = 2;
+        $data["id_update"] = null;
+        $data["id_product"] = null;
+        $data["description_custom_content"] = null;
+        $data["delivery_status"] = null;
+        $data["id_subscribe"] = $this->request->id;
+        $data["currency"] = "XOF";
+        $cinetPay = new CinetPayService();
+        $result = $cinetPay->payment($data);
 
-  }// End Method cancelWalletSubscription
+        if ($result["code"] == '201') {
+            $url = $result["data"]["payment_url"];
 
-  /**
-	 *  Subscription via Wallet
-	 *
-	 * @return Response
-	 */
-   protected function sendWallet()
-   {
-     // Find user
-     $creator = User::whereId($this->request->id)
-         ->whereVerifiedId('yes')
-           ->firstOrFail();
+            return response()->json([
+                "success" => true,
+                "payment" => "CinetPay",
+                "data" => $result["data"]
+            ]);
+        } else {
+            return response()->json([
+                "success" => false,
+                "data" => $result,
+            ]);
+        }
 
-     // Check if Plan exists
-     $plan = $creator->plans()
-       ->whereInterval($this->request->interval)
-          ->firstOrFail();
+    }
+    /**
+     * Free subscription
+     *
+     */
+    public function subscriptionFree()
+    {
+        //dd("subscription ok");
+        // Find user
+        $creator = User::whereId($this->request->id)
+            ->whereFreeSubscription('yes')
+            ->whereVerifiedId('yes')
+            ->firstOrFail();
 
-     $amount = $plan->price;
+        // Verify plan no is empty
+        if (!$creator->plan) {
+            $creator->plan = 'user_' . $creator->id;
+            $creator->save();
+        }
 
-     // Verify plan no is empty
-     if (! $creator->plan) {
-        $creator->plan = 'user_'.$creator->id;
-        $creator->save();
-     }
+        // Check if not plans
+        if ($creator->plans()->count() == 0) {
 
-     if (auth()->user()->wallet < Helper::amountGross($amount)) {
-       return response()->json([
-         "success" => false,
-         "errors" => ['error' => __('general.not_enough_funds')]
-       ]);
-     }
+            Plans::updateOrCreate(
+                [
+                    'user_id' => $creator->id,
+                    'name' => 'user_' . $creator->id
+                ],
+                [
+                    'interval' => 'monthly',
+                    'status' => '1'
+                ]);
+        }
 
-     // Insert DB
-     $subscription              = new Subscriptions();
-     $subscription->user_id     = auth()->id();
-     $subscription->stripe_price = $plan->name;
-     $subscription->ends_at     = $creator->planInterval($plan->interval);
-     $subscription->rebill_wallet = 'on';
-     $subscription->interval = $plan->interval;
-     $subscription->taxes = auth()->user()->taxesPayable();
-     $subscription->save();
+        // Verify subscription exists
+        $subscription = Subscriptions::whereUserId(auth()->id())
+            ->whereStripePrice($creator->plan)
+            ->whereFree('yes')
+            ->first();
 
-     // Admin and user earnings calculation
-     $earnings = $this->earningsAdminUser($creator->custom_fee, $amount, null, null);
+        if ($subscription) {
+            return response()->json([
+                'success' => false,
+                'error' => trans('general.subscription_exists'),
+            ]);
+        }
 
-     // Insert Transaction
-     $this->transaction(
-        'subw_'.str_random(25),
-        auth()->id(),
-        $subscription->id,
-        $creator->id,
-        $amount,
-        $earnings['user'],
-        $earnings['admin'],
-        'Wallet',
-        'subscription',
-        $earnings['percentageApplied'],
-        auth()->user()->taxesPayable()
-      );
+        // Insert DB
+        $sql = new Subscriptions();
+        $sql->user_id = auth()->id();
+        $sql->stripe_price = $creator->plan;
+        $sql->free = 'yes';
+        $sql->save();
 
-     // Subtract user funds
-     auth()->user()->decrement('wallet', Helper::amountGross($amount));
+        // Send Email to User and Notification
+        Subscriptions::sendEmailAndNotify(auth()->user()->name, $creator->id);
 
-     // Add Earnings to User
-     $creator->increment('balance', $earnings['user']);
+        return response()->json([
+            'success' => true,
+        ]);
+    }// End Method cancelFreeSubscription
 
-     // Send Email to User and Notification
-     Subscriptions::sendEmailAndNotify(auth()->user()->name, $creator->id);
+    public function cancelFreeSubscription($id)
+    {
+        //dd("cancel subscription ok");
+        $checkSubscription = auth()->user()->userSubscriptions()->whereId($id)->firstOrFail();
+        $creator = User::wherePlan($checkSubscription->stripe_price)->first();
 
-     return response()->json([
-       'success' => true,
-       'url' => url('buy/subscription/success', $creator->username)
-     ]);
+        // Delete Subscription
+        $checkSubscription->delete();
 
-   } // End sendTipWallet
+        session()->put('subscription_cancel', trans('general.subscription_cancel'));
+        return redirect($creator->username);
+
+    }// End Method cancelWalletSubscription
+
+    public function cancelWalletSubscription($id)
+    {
+        $subscription = auth()->user()->userSubscriptions()->whereId($id)->firstOrFail();
+        $creator = Plans::whereName($subscription->stripe_price)->first();
+
+        // Delete Subscription
+        $subscription->cancelled = 'yes';
+        $subscription->save();
+
+        session()->put('subscription_cancel', trans('general.subscription_cancel'));
+        return redirect($creator->user()->username);
+
+    } // End sendTipWallet
 
 }

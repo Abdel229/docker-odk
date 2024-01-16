@@ -73,6 +73,13 @@ $("#fileBankTransfer").on('change', function() {
 			success:  function(result) {
 
 				// success
+<<<<<<< HEAD
+=======
+				if (result.success === true && result.payment === "CinetPay") {
+					const data = result.data
+					window.location.href = data.payment_url
+				}
+>>>>>>> main
 				if (result.success && result.instantPayment) {
 						window.location.reload();
 				}
@@ -106,6 +113,12 @@ $("#fileBankTransfer").on('change', function() {
 					 $('#handlingFee, #total, #total2').html('0');
 					 $('#bankTransferBox').hide();
 
+<<<<<<< HEAD
+=======
+				} else if (result.success === true && result.payment === "CinetPay") {
+					const data = result.data
+					window.location.href = data.payment_url
+>>>>>>> main
 				} else if(result.success == true && result.url) {
 					window.location.href = result.url;
 				} else {

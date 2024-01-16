@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Requests;
 use App\Models\User;
@@ -156,4 +157,10 @@ class LangController extends Controller
 	}//<--- End Method
 
 
+    public function change(Request $request)
+    {
+        App::setLocale($request->lang);
+        session()->put('locale', $request->lang);
+        return redirect()->back();
+    }
 }

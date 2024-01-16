@@ -41,6 +41,10 @@ class Kernel extends HttpKernel
             \App\Http\Middleware\UserOnline::class,
             \App\Http\Middleware\UserCountry::class,
             \App\Http\Middleware\Referred::class,
+<<<<<<< HEAD
+=======
+            \App\Http\Middleware\LanguageManager::class,
+>>>>>>> main
         ],
 
         'api' => [

@@ -18,7 +18,7 @@ class SocialAuthController extends Controller
   public function callback(SocialAccountService $service, Request $request, $provider)
   {
 
-    // echo  $provider;
+     //echo  $provider;
     // exit;
     try {
       $user = $service->createOrGetUser(Socialite::driver($provider)->user(), $provider);
@@ -30,6 +30,7 @@ class SocialAuthController extends Controller
         auth()->login($user);
       }
     } catch (\Exception $e) {
+        //dd($e);
       return redirect('login')->with(['login_required' => $e->getMessage()]);
     }
 

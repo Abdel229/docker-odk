@@ -19,7 +19,12 @@ use App\Models\Notifications;
 use App\Models\Conversations;
 use App\Models\Messages;
 use Yabacon\Paystack;
+<<<<<<< HEAD
 
+=======
+use App\Services\cinetpay\CinetPayService;
+use App\Models\CinepayPayment;
+>>>>>>> main
 
 class TipController extends Controller
 {
@@ -91,6 +96,13 @@ class TipController extends Controller
       case 5:
         return $this->sendTipPaystack();
         break;
+<<<<<<< HEAD
+=======
+        
+      case 11:
+        return $this->sendCinetPay();
+        break;
+>>>>>>> main
     }
 
 
@@ -205,8 +217,59 @@ class TipController extends Controller
      ]);
 
    } // End sendTipWallet
+<<<<<<< HEAD
 
 
+=======
+   
+   /**
+	 *  Send Tip Wallet
+	 *
+	 * @return Response
+	 */
+    protected function sendCinetPay(){
+        $creator = User::find($this->request->id);
+        $payment = PaymentGateways::whereName('Cinetpay')->whereEnabled(1)->firstOrFail();
+        $fee = $payment->fee;
+        $cents = $payment->fee_cents;
+
+        $taxes = $this->settings->tax_on_wallet ? ($this->request->amount * auth()->user()->isTaxable()->sum('percentage') / 100) : 0;
+
+        $amount = number_format($this->request->amount + ($this->request->amount * $fee / 100) + $cents + $taxes, 2, '.', '');
+        $data = [];
+        $data["customer_name"] = auth()->user()->name;
+        $data["customer_surname"] = auth()->user()->username;
+        $data["description"] = "Tip sdk";
+        $data["amount"] = $this->request->amount;
+        $data["type_operation"] = 5;
+        $data["id_update"] = null;
+        $data["id_product"] = null;
+        $data["description_custom_content"] = null;
+        $data["delivery_status"] = null;
+        $data["id_subscribe"] = $creator->id;
+        $data["currency"] = "XOF";
+        $cinetPay = new CinetPayService();
+        $result = $cinetPay->payment($data);
+          if ($result["code"] == '201') {
+            $url = $result["data"]["payment_url"];
+
+            return response()->json([
+                "success" => true,
+                "url"=> $url,
+                "payment" => "CinetPay",
+                "data" => $result["data"]
+            ]);
+            
+           // return redirect($url);
+        } else {
+            return response()->json([
+                "success" => false,
+                "data" => $result,
+            ]);
+        }
+    }
+// End send Tip Cinetpay
+>>>>>>> main
   /**
 	 *  Send Tip PayPal
 	 *

@@ -1,7 +1,11 @@
 @extends('admin.layout')
 
 @section('css')
+<<<<<<< HEAD
 <link href="{{ asset('public/plugins/iCheck/all.css') }}" rel="stylesheet" type="text/css" />
+=======
+<link href="{{ asset('plugins/iCheck/all.css') }}" rel="stylesheet" type="text/css" />
+>>>>>>> main
 @endsection
 
 @section('content')
@@ -113,7 +117,11 @@
              <div class="col-sm-10">
                <select name="custom_fee" class="form-control">
                  <option @if ($user->custom_fee == 0) selected="selected" @endif value="0" >{{__('general.none')}}</option>
+<<<<<<< HEAD
                  @for ($i=1; $i <= 50; ++$i)
+=======
+                 @for ($i=1; $i <= 100; ++$i)
+>>>>>>> main
                    <option @if ($user->custom_fee == $i) selected="selected" @endif value="{{$i}}">{{$i}}%</option>
                    @endfor
                    </select>

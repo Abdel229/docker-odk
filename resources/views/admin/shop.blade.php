@@ -1,7 +1,11 @@
 @extends('admin.layout')
 
 @section('css')
+<<<<<<< HEAD
 <link href="{{ asset('public/plugins/iCheck/all.css') }}" rel="stylesheet" type="text/css" />
+=======
+<link href="{{ asset('plugins/iCheck/all.css') }}" rel="stylesheet" type="text/css" />
+>>>>>>> main
 @endsection
 
 @section('content')
@@ -106,6 +110,16 @@
                           <span class="margin-left-5">{{ __('general.custom_content') }}</span>
                       </label>
                     </div>
+<<<<<<< HEAD
+=======
+
+                    <div class="radio">
+                        <label class="padding-zero">
+                          <input type="checkbox" name="product_content" class="check" value="1" @if ($settings->product_content) checked="checked" @endif>
+                            <span class="margin-left-5">{{ __('general.product_content') }}</span>
+                        </label>
+                      </div>
+>>>>>>> main
                       </div>
                     </div>
                   </div><!-- /.box-body -->

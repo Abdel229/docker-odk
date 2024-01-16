@@ -12,11 +12,13 @@ use App\Events\LiveBroadcasting;
 use Illuminate\Support\Facades\Validator;
 use App\Models\User;
 use App\Helper;
+use Yasser\Agora\RtcTokenBuilder;
+use Carbon\Carbon;
+use Session;
 
 class LiveStreamingsController extends Controller
 {
   use Traits\Functions;
-
   public function __construct(Request $request, AdminSettings $settings) {
     $this->request = $request;
     $this->settings = $settings::first();
@@ -60,6 +62,9 @@ class LiveStreamingsController extends Controller
         $live->availability = $this->request->availability;
         $live->save();
 
+        Session::put('times',strtotime(Carbon::now()->addMinutes(100)->getTimestamp()));
+
+        //dd(strtotime(Carbon::now()->addMinutes(200)->getTimestamp()));
        // Notify to subscribers
        event(new LiveBroadcasting(auth()->user(), $live->id));
 
@@ -103,13 +108,13 @@ class LiveStreamingsController extends Controller
 
     // Hidden Live Blocked Countries
     if (in_array(Helper::userCountry(), $creator->blockedCountries())
-        && auth()->check()
-        && auth()->user()->permission != 'all'
-        && auth()->id() != $creator->id
-        || auth()->guest()
-        && in_array(Helper::userCountry(), $creator->blockedCountries())
-      ) {
-        abort(404);
+          && auth()->check()
+          && auth()->user()->permission != 'all'
+          && auth()->id() != $creator->id
+          || auth()->guest()
+          && in_array(Helper::userCountry(), $creator->blockedCountries())
+        ) {
+          abort(404);
       }
 
     // Search last Live Streaming
@@ -118,7 +123,6 @@ class LiveStreamingsController extends Controller
     ->whereStatus('0')
     ->orderBy('id', 'desc')
     ->first();
-
     // Check subscription
     $checkSubscription = auth()->user()->checkSubscription($creator);
 
@@ -182,6 +186,7 @@ class LiveStreamingsController extends Controller
       $paymentRequiredToAccess = true;
     }
 
+
     if ($live && $this->settings->limit_live_streaming_paid != 0 && $live->availability != 'everyone_free') {
       $limitLiveStreaming = $this->settings->limit_live_streaming_paid - $live->TimeElapsed;
     } elseif ($live && $this->settings->limit_live_streaming_free != 0 && $live->availability == 'everyone_free') {
@@ -190,9 +195,19 @@ class LiveStreamingsController extends Controller
       $limitLiveStreaming = false;
     }
 
+    $setTime = Session::get('times');
+    $currentTimestamp = strtotime($setTime+3600);
+    //dd($currentTimestamp);
+    //$expireTimeInSeconds = ($limitLiveStreaming * 60);
+    //$currentTimestamp = strtotime(now()->getTimestamp()) ;
+    //$privilegeExpiredTs = $expireTimeInSeconds + $currentTimestamp;
+    $tokenx = $live == true ? RtcTokenBuilder::buildTokenWithUserAccount($this->settings->agora_app_id, $this->settings->agora_certificat, $live->channel, 0, $live->user_id == auth()->id() ? 'host' :'audience', $currentTimestamp) :"";
+    $tokenx = $tokenx.'==';
+    //dd($tokenx);
     return view('users.live', [
       'creator' => $creator,
       'live' => $live,
+      'tokenx' =>$tokenx,
       'checkSubscription' => $checkSubscription,
       'comments' => $live->comments ?? null,
       'likes' => $likes ?? null,
@@ -217,7 +232,6 @@ class LiveStreamingsController extends Controller
     ->where('updated_at', '>', now()->subMinutes(5))
     ->whereStatus('0')
     ->first();
-
     // Limit Live Streaming (time)
     if ($live && $this->settings->limit_live_streaming_paid != 0 && $live->availability != 'everyone_free') {
       $limitLiveStreaming = $this->settings->limit_live_streaming_paid - $live->TimeElapsed;

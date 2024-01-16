@@ -16,6 +16,10 @@ class VerifyCsrfToken extends Middleware
       'paypal/*',
       'webhook/*',
       'ccbill/approved',
-      'coinpayments/*'
+      'coinpayments/*',
+      '/cinetpay/*',
+      '/cinetpay/return',
+      '/signup',
+      'add/funds'
     ];
 }
