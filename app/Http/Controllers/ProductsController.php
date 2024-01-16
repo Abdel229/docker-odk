@@ -171,7 +171,6 @@ class ProductsController extends Controller
      	}
     }
 
-
      $product              = new Products();
      $product->user_id     = auth()->id();
      $product->name        = $this->request->name;
@@ -266,7 +265,6 @@ class ProductsController extends Controller
      $currencyPosition =  null;
    }
 
-
    $messages = [
    'description.required' => trans('validation.required', ['attribute' => __('general.description')]),
    'tags.required' => trans('validation.required', ['attribute' => __('general.tags')]),
@@ -316,7 +314,6 @@ class ProductsController extends Controller
           ]);
      	}
     }
-
 
      $product              = new Products();
      $product->user_id     = auth()->id();
@@ -766,7 +763,7 @@ public function updates()
                 $verified = $ipn->processIpn($data);
 
                 if($verified){
-                    if($_POST['payment_status']){
+                    if($_POST['payment_status']=='confirmed'){
                         $url = $result["data"]["payment_url"];
 
                 return response()->json([

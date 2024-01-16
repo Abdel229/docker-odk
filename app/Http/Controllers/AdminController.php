@@ -16,13 +16,20 @@ use App\Models\Countries;
 use App\Models\Withdrawals;
 use App\Models\ReferralTransactions;
 use App\Models\Purchases;
+<<<<<<< HEAD
+use App\Models\Frontsetting;
+=======
+>>>>>>> main
 use App\Models\Notifications;
 use App\Models\PaymentGateways;
 use App\Models\Comments;
 use App\Models\Transactions;
 use App\Models\Products;
 use App\Models\Media;
+<<<<<<< HEAD
+=======
 use App\Models\Frontsetting;
+>>>>>>> main
 use App\Models\Like;
 use App\Models\Blogs;
 use App\Models\Updates;
@@ -40,8 +47,11 @@ use App\Notifications\PostRejected;
 use App\Events\NewPostEvent;
 use Yabacon\Paystack;
 use Illuminate\Validation\Rule;
+<<<<<<< HEAD
+=======
 use App\Services\cinetpay\CinetPayTransfert;
 use App\Models\CinepayPayment;
+>>>>>>> main
 use Image;
 use Mail;
 
@@ -62,6 +72,16 @@ class AdminController extends Controller
 	 */
 	public function admin()
 	{
+<<<<<<< HEAD
+		if (!auth()->user()->hasPermission('dashboard')) {
+			return view('admin.unauthorized');
+		}
+
+		$users               = User::orderBy('id', 'DESC')->take(4)->get();
+		$total_raised_funds  = Transactions::whereApproved('1')->sum('earning_net_admin');
+		$total_subscriptions = Subscriptions::count();
+		$subscriptions       = Subscriptions::orderBy('id', 'desc')->take(4)->get();
+=======
 		if (! auth()->user()->hasPermission('dashboard')) {
 				return view('admin.unauthorized');
 		}
@@ -70,12 +90,43 @@ class AdminController extends Controller
 		$total_raised_funds  = Transactions::whereApproved('1')->sum('earning_net_admin');
 		$total_subscriptions = Subscriptions::count();
 		$subscriptions       = Subscriptions::orderBy('id','desc')->take(4)->get();
+>>>>>>> main
 		$total_posts         = Updates::count();
 
 		// Statistics of the month
 
 		// Today
 		$stat_revenue_today = Transactions::where('created_at', '>=', date('Y-m-d H:i:s', strtotime('today')))
+<<<<<<< HEAD
+			->whereApproved('1')
+			->sum('earning_net_admin');
+
+		// Week
+		$stat_revenue_week = Transactions::whereBetween('created_at', [
+			Carbon::parse()->startOfWeek(),
+			Carbon::parse()->endOfWeek(),
+		])->whereApproved('1')
+			->sum('earning_net_admin');
+
+		// Month
+		$stat_revenue_month = Transactions::whereBetween('created_at', [
+			Carbon::parse()->startOfMonth(),
+			Carbon::parse()->endOfMonth(),
+		])->whereApproved('1')
+			->sum('earning_net_admin');
+
+		return view('admin.dashboard', [
+			'users' => $users,
+			'total_raised_funds' => $total_raised_funds,
+			'total_subscriptions' => $total_subscriptions,
+			'subscriptions' => $subscriptions,
+			'total_posts' => $total_posts,
+			'stat_revenue_today' => $stat_revenue_today,
+			'stat_revenue_week' => $stat_revenue_week,
+			'stat_revenue_month' => $stat_revenue_month
+		]);
+	} //<--- END METHOD
+=======
 		->whereApproved('1')
 		 ->sum('earning_net_admin');
 
@@ -105,6 +156,7 @@ class AdminController extends Controller
 		]);
 
 	}//<--- END METHOD
+>>>>>>> main
 
 	/**
 	 * Show Members section
@@ -148,13 +200,34 @@ class AdminController extends Controller
 			\Session::flash('info_message', trans('admin.user_no_edit'));
 			return redirect('panel/admin/members');
 		}
+<<<<<<< HEAD
+		return view('admin.edit-member')->withUser($user);
+	} //<--- End Method
+=======
     	return view('admin.edit-member')->withUser($user);
 
 	}//<--- End Method
+>>>>>>> main
 
 	public function update($id, Request $request)
 	{
 		$request->validate([
+<<<<<<< HEAD
+			'email' => 'required|email|max:255|unique:users,email,' . $id,
+		]);
+
+		$user = User::findOrFail($id);
+
+		if ($request->featured == 'yes' && $user->featured == 'no') {
+			$featured_date = Carbon::now();
+		} else {
+			$featured_date = $user->featured_date;
+		}
+
+		if ($request->featured == 'no' && $user->featured == 'yes') {
+			$featured_date = null;
+		}
+=======
 			'email' => 'required|email|max:255|unique:users,email,'.$id,
 		]);
 
@@ -169,6 +242,7 @@ class AdminController extends Controller
 		 if ($request->featured == 'no' && $user->featured == 'yes') {
 			 $featured_date = null;
 		 }
+>>>>>>> main
 
 		$user->email = $request->email;
 		$user->verified_id = $request->verified;
@@ -182,8 +256,12 @@ class AdminController extends Controller
 		\Session::flash('success_message', trans('admin.success_update'));
 
 		return redirect('panel/admin/members');
+<<<<<<< HEAD
+	} //<--- End Method
+=======
 
 	}//<--- End Method
+>>>>>>> main
 
 	public function destroy($id)
 	{
@@ -191,6 +269,23 @@ class AdminController extends Controller
 		$user = User::findOrFail($id);
 
 		if ($user->id == 1 || $user->id == auth()->user()->id) {
+<<<<<<< HEAD
+			return redirect('panel/admin/members');
+			exit;
+		}
+
+		$this->deleteUser($id);
+
+		return redirect('panel/admin/members');
+	} //<--- End Method
+
+	public function settings()
+	{
+		$genders = explode(',', $this->settings->genders);
+
+		return view('admin.settings', ['genders' => $genders]);
+	} //<--- END METHOD
+=======
 				return redirect('panel/admin/members');
 				exit;
 			}
@@ -207,6 +302,7 @@ class AdminController extends Controller
 
 			return view('admin.settings', ['genders' => $genders]);
 	}//<--- END METHOD
+>>>>>>> main
 
 	public function saveSettings(Request $request)
 	{
@@ -231,8 +327,13 @@ class AdminController extends Controller
 		], $messages);
 
 		if (isset($request->genders)) {
+<<<<<<< HEAD
+			$genders = implode(',', $request->genders);
+		}
+=======
 				$genders = implode( ',', $request->genders);
 			}
+>>>>>>> main
 
 		$sql                      = AdminSettings::first();
 		$sql->title               = $request->title;
@@ -267,7 +368,11 @@ class AdminController extends Controller
 		Helper::envUpdate('DEFAULT_LOCALE', $request->default_language);
 
 		// App Name
+<<<<<<< HEAD
+		Helper::envUpdate('APP_NAME', ' "' . $request->title . '" ', true);
+=======
 		Helper::envUpdate('APP_NAME', ' "'.$request->title.'" ', true);
+>>>>>>> main
 
 		// APP Debug
 		$path = base_path('.env');
@@ -280,20 +385,35 @@ class AdminController extends Controller
 
 		if (file_exists($path)) {
 			file_put_contents($path, str_replace(
+<<<<<<< HEAD
+				$APP_DEBUG,
+				'APP_DEBUG=' . $request->app_debug,
+				file_get_contents($path)
+=======
 					$APP_DEBUG, 'APP_DEBUG=' . $request->app_debug, file_get_contents($path)
+>>>>>>> main
 			));
 		}
 
 		\Session::flash('success_message', trans('admin.success_update'));
 
+<<<<<<< HEAD
+		return redirect('panel/admin/settings');
+	} //<--- END METHOD
+=======
     	return redirect('panel/admin/settings');
 
 	}//<--- END METHOD
+>>>>>>> main
 
 	public function settingsLimits()
 	{
 		return view('admin.limits')->withSettings($this->settings);
+<<<<<<< HEAD
+	} //<--- END METHOD
+=======
 	}//<--- END METHOD
+>>>>>>> main
 
 	public function saveSettingsLimits(Request $request)
 	{
@@ -315,9 +435,14 @@ class AdminController extends Controller
 
 		\Session::flash('success_message', trans('admin.success_update'));
 
+<<<<<<< HEAD
+		return redirect('panel/admin/settings/limits');
+	} //<--- END METHOD
+=======
     	return redirect('panel/admin/settings/limits');
 
 	}//<--- END METHOD
+>>>>>>> main
 
 	public function maintenanceMode(Request $request)
 	{
@@ -336,6 +461,14 @@ class AdminController extends Controller
 
 		if ($request->maintenance_mode == 'on') {
 			return redirect($strRandom)
+<<<<<<< HEAD
+				->withSuccessMessage(trans('admin.maintenance_mode_on'));
+		} else {
+			return redirect('panel/admin/maintenance/mode')
+				->withSuccessMessage(trans('admin.maintenance_mode_off'));
+		}
+	} //<--- END METHOD
+=======
 			->withSuccessMessage(trans('admin.maintenance_mode_on'));
 		} else {
 			return redirect('panel/admin/maintenance/mode')
@@ -343,17 +476,33 @@ class AdminController extends Controller
 		}
 
 	}//<--- END METHOD
+>>>>>>> main
 
 	public function profiles_social()
 	{
 		return view('admin.profiles-social')->withSettings($this->settings);
+<<<<<<< HEAD
+	} //<--- End Method
+=======
 	}//<--- End Method
+>>>>>>> main
 
 	public function update_profiles_social(Request $request)
 	{
 		$sql = AdminSettings::find(1);
 
 		$rules = array(
+<<<<<<< HEAD
+			'twitter'    => 'url',
+			'facebook'   => 'url',
+			'googleplus' => 'url',
+			'youtube'   => 'url',
+		);
+
+		$this->validate($request, $rules);
+
+		$sql->twitter   = $request->twitter;
+=======
             'twitter'    => 'url',
             'facebook'   => 'url',
             'googleplus' => 'url',
@@ -363,6 +512,7 @@ class AdminController extends Controller
 		$this->validate($request, $rules);
 
 	  $sql->twitter   = $request->twitter;
+>>>>>>> main
 		$sql->facebook  = $request->facebook;
 		$sql->pinterest = $request->pinterest;
 		$sql->instagram = $request->instagram;
@@ -373,6 +523,18 @@ class AdminController extends Controller
 
 		$sql->save();
 
+<<<<<<< HEAD
+		\Session::flash('success_message', trans('admin.success_update'));
+
+		return redirect('panel/admin/profiles-social');
+	} //<--- End Method
+
+	public function subscriptions()
+	{
+		$data = Subscriptions::orderBy('id', 'DESC')->paginate(50);
+		return view('admin.subscriptions', ['data' => $data]);
+	} //<--- End Method
+=======
 	    \Session::flash('success_message', trans('admin.success_update'));
 
 	    return redirect('panel/admin/profiles-social');
@@ -383,11 +545,22 @@ class AdminController extends Controller
 		$data = Subscriptions::orderBy('id','DESC')->paginate(50);
 		return view('admin.subscriptions', ['data' => $data]);
 	}//<--- End Method
+>>>>>>> main
 
 	public function transactions(Request $request)
 	{
 		$query = $request->input('q');
 
+<<<<<<< HEAD
+		if ($query != '' && strlen($query) > 2) {
+			$data = Transactions::where('txn_id', 'LIKE', '%' . $query . '%')->orderBy('id', 'DESC')->paginate(50);
+		} else {
+			$data = Transactions::orderBy('id', 'DESC')->paginate(50);
+		}
+
+		return view('admin.transactions', ['data' => $data]);
+	} //<--- End Method
+=======
 		if ($query != '' && strlen( $query ) > 2) {
 			$data = Transactions::where('txn_id', 'LIKE', '%'.$query.'%')->orderBy('id','DESC')->paginate(50);
 		} else {
@@ -396,6 +569,7 @@ class AdminController extends Controller
 
 		return view('admin.transactions', ['data' => $data]);
 	}//<--- End Method
+>>>>>>> main
 
 	public function cancelTransaction($id)
 	{
@@ -408,6 +582,56 @@ class AdminController extends Controller
 
 			case 'Stripe':
 
+<<<<<<< HEAD
+				if (isset($subscription)) {
+					$stripe = new \Stripe\StripeClient(env('STRIPE_SECRET'));
+					$stripe->subscriptions->cancel($subscription->stripe_id, []);
+				}
+
+				break;
+
+			case 'Paystack':
+
+				if (isset($subscription)) {
+					$payment = PaymentGateways::whereId(4)->whereName('Paystack')->whereEnabled(1)->first();
+
+					$curl = curl_init();
+
+					curl_setopt_array($curl, array(
+						CURLOPT_URL => "https://api.paystack.co/subscription/" . $id,
+						CURLOPT_RETURNTRANSFER => true,
+						CURLOPT_ENCODING => "",
+						CURLOPT_MAXREDIRS => 10,
+						CURLOPT_TIMEOUT => 30,
+						CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+						CURLOPT_CUSTOMREQUEST => "GET",
+						CURLOPT_HTTPHEADER => array(
+							"Authorization: Bearer " . $payment->key_secret,
+							"Cache-Control: no-cache",
+						),
+					));
+
+					$response = curl_exec($curl);
+					$err = curl_error($curl);
+					curl_close($curl);
+
+					if ($err) {
+						throw new \Exception("cURL Error #:" . $err);
+					} else {
+						$result = json_decode($response);
+					}
+
+					// initiate the Library's Paystack Object
+					$paystack = new Paystack($payment->key_secret);
+
+					$paystack->subscription->disable([
+						'code' => $subscription->subscription_id,
+						'token' => $result->data->email_token
+					]);
+				}
+
+				break;
+=======
 			if (isset($subscription)) {
 				$stripe = new \Stripe\StripeClient(env('STRIPE_SECRET'));
 				$stripe->subscriptions->cancel($subscription->stripe_id, []);
@@ -456,6 +680,7 @@ class AdminController extends Controller
 				}
 
 			break;
+>>>>>>> main
 		}
 
 		if (isset($subscription)) {
@@ -473,8 +698,14 @@ class AdminController extends Controller
 
 		\Session::flash('success_message', trans('admin.success_update'));
 
+<<<<<<< HEAD
+		return redirect('panel/admin/transactions');
+	}
+
+=======
     return redirect('panel/admin/transactions');
 	}
+>>>>>>> main
 	public function settingsfront()
 	{
 		$getData = Frontsetting::where('id', '1')->first();
@@ -534,7 +765,11 @@ class AdminController extends Controller
 		$stripeConnectCountries = explode(',', $this->settings->stripe_connect_countries);
 
 		return view('admin.payments-settings')->withStripeConnectCountries($stripeConnectCountries);
+<<<<<<< HEAD
+	} //<--- End Method
+=======
 	}//<--- End Method
+>>>>>>> main
 
 	public function savePayments(Request $request)
 	{
@@ -552,24 +787,58 @@ class AdminController extends Controller
 		];
 
 		$rules = [
+<<<<<<< HEAD
+			'currency_code' => 'required|alpha',
+			'currency_symbol' => 'required',
+			'min_subscription_amount' => 'required|numeric|min:1',
+			'max_subscription_amount' => 'required|numeric|min:1',
+			'stripe_connect_countries' => Rule::requiredIf($request->stripe_connect == 1)
+		];
+=======
 						'currency_code' => 'required|alpha',
 						'currency_symbol' => 'required',
 						'min_subscription_amount' => 'required|numeric|min:1',
 						'max_subscription_amount' => 'required|numeric|min:1',
 						'stripe_connect_countries' => Rule::requiredIf($request->stripe_connect == 1)
         ];
+>>>>>>> main
 
 		$this->validate($request, $rules, $messages);
 
 		if (isset($request->stripe_connect_countries)) {
+<<<<<<< HEAD
+			$stripeConnectCountries = implode(',', $request->stripe_connect_countries);
+		}
+=======
 				$stripeConnectCountries = implode( ',', $request->stripe_connect_countries);
 			}
+>>>>>>> main
 
 		$sql->currency_symbol  = $request->currency_symbol;
 		$sql->currency_code    = strtoupper($request->currency_code);
 		$sql->currency_position = $request->currency_position;
+<<<<<<< HEAD
+		$sql->number_followers_title   = $request->number_followers_title;
+		$sql->min_subscription_amount   = $request->min_subscription_amount;
+		$sql->earnings_simulator_head   = $request->earnings_simulator_head;
+		$sql->earnings_simulator_subtitle   = $request->earnings_simulator_subtitle;
+		$sql->max_subscription_amount   = $request->max_subscription_amount;
+		$sql->monthly_subscription_price   = $request->monthly_subscription_price;
+		$sql->max_number_followers   = $request->max_number_followers;
+		$sql->min_number_followers   = $request->min_number_followers;
+		$sql->per_month   = $request->per_month;
+		$sql->earnings_simulator_subtitle_2   = $request->earnings_simulator_subtitle_2;
+		$sql->earnings_simulator_subtitle_4   = $request->earnings_simulator_subtitle_4;
+		$sql->earnings_simulator_subtitle_5   = $request->earnings_simulator_subtitle_5;
+		$sql->earnings_simulator_subtitle_6   = $request->earnings_simulator_subtitle_6;
+		$sql->earnings_simulator_subtitle_7   = $request->earnings_simulator_subtitle_7;
+		$sql->earnings_simulator_subtitle_8   = $request->earnings_simulator_subtitle_8;
+		$sql->earnings_simulator_subtitle_9   = $request->earnings_simulator_subtitle_9;
+		$sql->monthly_subscription_title   = $request->monthly_subscription_title;
+=======
 		$sql->min_subscription_amount   = $request->min_subscription_amount;
 		$sql->max_subscription_amount   = $request->max_subscription_amount;
+>>>>>>> main
 		$sql->min_tip_amount   = $request->min_tip_amount;
 		$sql->max_tip_amount   = $request->max_tip_amount;
 		$sql->min_ppv_amount   = $request->min_ppv_amount;
@@ -595,6 +864,18 @@ class AdminController extends Controller
 
 		$sql->save();
 
+<<<<<<< HEAD
+		\Session::flash('success_message', trans('admin.success_update'));
+
+		return redirect('panel/admin/payments');
+	} //<--- End Method
+
+	public function withdrawals()
+	{
+		$data = Withdrawals::orderBy('id', 'DESC')->paginate(50);
+		return view('admin.withdrawals', ['data' => $data]);
+	} //<--- End Method
+=======
 	    \Session::flash('success_message', trans('admin.success_update'));
 
 	    return redirect('panel/admin/payments');
@@ -605,11 +886,50 @@ class AdminController extends Controller
 		$data = Withdrawals::orderBy('id','DESC')->paginate(50);
 		return view('admin.withdrawals', ['data' => $data]);
 	}//<--- End Method
+>>>>>>> main
 
 	public function withdrawalsView($id)
 	{
 		$data = Withdrawals::findOrFail($id);
 		return view('admin.withdrawal-view', ['data' => $data]);
+<<<<<<< HEAD
+	} //<--- End Method
+
+	public function withdrawalsPaid(Request $request)
+	{
+		$data = Withdrawals::findOrFail($request->id);
+
+		$user = $data->user();
+
+		$data->status    = 'paid';
+		$data->date_paid = Carbon::now();
+		$data->save();
+
+		//<------ Send Email to User ---------->>>
+		$amount       = Helper::amountWithoutFormat($data->amount) . ' ' . $this->settings->currency_code;
+		$sender       = $this->settings->email_no_reply;
+		$titleSite    = $this->settings->title;
+		$fullNameUser = $user->name;
+		$_emailUser   = $user->email;
+
+		Mail::send(
+			'emails.withdrawal-processed',
+			array(
+				'amount'     => $amount,
+				'title_site' => $titleSite,
+				'fullname'   => $fullNameUser
+			),
+			function ($message) use ($sender, $fullNameUser, $titleSite, $_emailUser) {
+				$message->from($sender, $titleSite)
+					->to($_emailUser, $fullNameUser)
+					->subject(trans('general.withdrawal_processed') . ' - ' . $titleSite);
+			}
+		);
+		//<------ Send Email to User ---------->>>
+
+		return redirect('panel/admin/withdrawals');
+	} //<--- End Method
+=======
 	}//<--- End Method
 
 	public function withdrawalsPaid(Request $request)
@@ -623,24 +943,24 @@ class AdminController extends Controller
 
 		if($data->gateway == "CinetPay"){
 
-			
+
 			$notifyurl = url()->current();
-			
+
 			$urlparse = parse_url($notifyurl);
 			$notify = "https://".$urlparse['host']."/". config("cinetpay.urls.notify");
-				
+
 			$txn_id = date("YmdHis");
 			$payload=array('prefix' => $user->cinetpay_number_indicative , 'phone' => $user->cinetpay_number, 'amount'=> $data->amount, 'notify_url'=> $notify,'client_transaction_id'=> $txn_id,);
-			//appel ce citeppay 
+			//appel ce citeppay
 			$apikey = config("cinetpay.api_key");
 			//Veuillez entrer votre key_password
 			$key_pass = config("cinetpay.key_pass");
-	
+
 			$cinetPay = new CinetPayTransfert($key_pass, $apikey);
 			$result = $cinetPay->Transfert(json_encode($payload));
-	
+
 			if($result == 0){
-	
+
 				$user = $data->user();
 				$data->status    = 'paid';
 				$data->txn_id = $txn_id;
@@ -652,7 +972,7 @@ class AdminController extends Controller
 			$titleSite    = $this->settings->title;
 			$fullNameUser = $user->name;
 			$_emailUser   = $user->email;
-	
+
 			Mail::send('emails.withdrawal-processed', array(
 						'amount'     => $amount,
 						'title_site' => $titleSite,
@@ -665,16 +985,16 @@ class AdminController extends Controller
 											->subject( trans('general.withdrawal_processed').' - '.$titleSite );
 					});
 				//<------ Send Email to User ---------->>>
-	
+
 				\Session::flash('success_message', trans('admin.success_update'));
 				return redirect('panel/admin/withdrawals');
 			}else{
-	
+
 				\Session::flash('errors_message', trans('Fail to make the paid request '));
 				return redirect('panel/admin/withdrawals');
 			}
-	
-	
+
+
 
 		}else{
 					//<------ Send Email to User ---------->>>
@@ -683,7 +1003,7 @@ class AdminController extends Controller
 					$titleSite    = $this->settings->title;
 					$fullNameUser = $user->name;
 					$_emailUser   = $user->email;
-			
+
 					Mail::send('emails.withdrawal-processed', array(
 								'amount'     => $amount,
 								'title_site' => $titleSite,
@@ -696,22 +1016,29 @@ class AdminController extends Controller
 													->subject( trans('general.withdrawal_processed').' - '.$titleSite );
 							});
 						//<------ Send Email to User ---------->>>
-			
+
 						\Session::flash('success_message', trans('admin.success_update'));
 						return redirect('panel/admin/withdrawals');
 		}
 
 
-	
+
 		return redirect('panel/admin/withdrawals');
 
 	}//<--- End Method
+>>>>>>> main
 
 
 	// START
 	public function categories()
 	{
 		$categories      = Categories::orderBy('name')->get();
+<<<<<<< HEAD
+		$totalCategories = count($categories);
+
+		return view('admin.categories', compact('categories', 'totalCategories'));
+	} //<--- END METHOD
+=======
 		$totalCategories = count( $categories );
 
 		return view('admin.categories', compact( 'categories', 'totalCategories' ));
@@ -724,10 +1051,47 @@ class AdminController extends Controller
 
 		return view('admin.product-categories', compact( 'categories', 'totalCategories' ));
 	}//<--- END METHOD
+>>>>>>> main
 
 	public function addCategories()
 	{
 		return view('admin.add-categories');
+<<<<<<< HEAD
+	} //<--- END METHOD
+
+	public function storeCategories(Request $request)
+	{
+
+		$temp            = 'public/temp/'; // Temp
+		$path            = 'public/img-category/'; // Path General
+
+		Validator::extend('ascii_only', function ($attribute, $value, $parameters) {
+			return !preg_match('/[^x00-x7F\-]/i', $value);
+		});
+
+		$rules = array(
+			'name'        => 'required',
+			'slug'        => 'required|ascii_only|unique:categories',
+			'thumbnail'   => 'required|mimes:jpg,gif,png,jpe,jpeg|dimensions:min_width=30,min_height=30',
+		);
+
+		$this->validate($request, $rules);
+
+		if ($request->hasFile('thumbnail')) {
+
+			$extension       = $request->file('thumbnail')->getClientOriginalExtension();
+			$type_mime_image = $request->file('thumbnail')->getMimeType();
+			$sizeFile        = $request->file('thumbnail')->getSize();
+			$thumbnail       = $request->slug . '-' . Str::random(32) . '.' . $extension;
+
+			if ($request->file('thumbnail')->move($temp, $thumbnail)) {
+
+				$image = Image::make($temp . $thumbnail);
+
+				\File::copy($temp . $thumbnail, $path . $thumbnail);
+				\File::delete($temp . $thumbnail);
+			} // End File
+=======
 	}//<--- END METHOD
 
 	public function addProductCategories()
@@ -770,12 +1134,31 @@ class AdminController extends Controller
 
 
 			}// End File
+>>>>>>> main
 		} // HasFile
 
 		else {
 			$thumbnail = '';
 		}
 
+<<<<<<< HEAD
+		$sql              = new Categories;
+		$sql->name        = $request->name;
+		$sql->slug        = $request->slug;
+		$sql->keywords    = $request->keywords;
+		$sql->description = $request->description;
+		$sql->mode        = $request->mode;
+		$sql->image       = $thumbnail;
+		$sql->save();
+
+		\Session::flash('success_message', trans('admin.success_add_category'));
+
+		return redirect('panel/admin/categories');
+	} //<--- END METHOD
+
+	public function editCategories($id)
+	{
+=======
 				$sql              = New Categories;
 				$sql->name        = $request->name;
 				$sql->slug        = $request->slug;
@@ -801,7 +1184,7 @@ class AdminController extends Controller
 
 		$rules = array(
           'name'        => 'required',
-	        
+
 	        'thumbnail'   => 'required|mimes:jpg,gif,png,jpe,jpeg|dimensions:min_width=30,min_height=30',
         );
 
@@ -845,10 +1228,14 @@ class AdminController extends Controller
 	}//<--- END METHOD
 
 	public function editCategories($id) {
+>>>>>>> main
 
 		$categories = Categories::find($id);
 
 		return view('admin.edit-categories')->with('categories', $categories);
+<<<<<<< HEAD
+	} //<--- END METHOD
+=======
 
 	}//<--- END METHOD
 
@@ -859,11 +1246,49 @@ class AdminController extends Controller
 		return view('admin.edit-product-categories')->with('categories', $categories);
 
 	}//<--- END METHOD
+>>>>>>> main
 
 	public function updateCategories(Request $request)
 	{
 		$categories        = Categories::find($request->id);
 		$temp            = 'public/temp/'; // Temp
+<<<<<<< HEAD
+		$path            = 'public/img-category/'; // Path General
+
+		if (!isset($categories)) {
+			return redirect('panel/admin/categories');
+		}
+
+		Validator::extend('ascii_only', function ($attribute, $value, $parameters) {
+			return !preg_match('/[^x00-x7F\-]/i', $value);
+		});
+
+		$rules = array(
+			'name'        => 'required',
+			'slug'        => 'required|ascii_only|unique:categories,slug,' . $request->id,
+			'thumbnail'   => 'mimes:jpg,gif,png,jpe,jpeg|dimensions:min_width=30,min_height=30',
+		);
+
+		$this->validate($request, $rules);
+
+		if ($request->hasFile('thumbnail')) {
+
+			$extension        = $request->file('thumbnail')->getClientOriginalExtension();
+			$type_mime_image   = $request->file('thumbnail')->getMimeType();
+			$sizeFile         = $request->file('thumbnail')->getSize();
+			$thumbnail        = $request->slug . '-' . Str::random(32) . '.' . $extension;
+
+			if ($request->file('thumbnail')->move($temp, $thumbnail)) {
+
+				$image = Image::make($temp . $thumbnail);
+
+				\File::copy($temp . $thumbnail, $path . $thumbnail);
+				\File::delete($temp . $thumbnail);
+
+				// Delete Old Image
+				\File::delete($path . $categories->thumbnail);
+			} // End File
+=======
 	  $path            = 'public/img-category/'; // Path General
 
 	  if(!isset($categories)) {
@@ -900,6 +1325,7 @@ class AdminController extends Controller
 			\File::delete($path.$categories->thumbnail);
 
 			}// End File
+>>>>>>> main
 		} // HasFile
 		else {
 			$thumbnail = $categories->image;
@@ -916,6 +1342,9 @@ class AdminController extends Controller
 
 		\Session::flash('success_message', trans('general.success_update'));
 		return redirect('panel/admin/categories');
+<<<<<<< HEAD
+	} //<--- END METHOD
+=======
 
 	}//<--- END METHOD
 	public function updateProductCategories(Request $request)
@@ -934,7 +1363,7 @@ class AdminController extends Controller
 
 		$rules = array(
           'name'        => 'required',
-	        
+
 	        'thumbnail'   => 'mimes:jpg,gif,png,jpe,jpeg|dimensions:min_width=30,min_height=30',
 	     );
 
@@ -965,7 +1394,7 @@ class AdminController extends Controller
 
 		// UPDATE CATEGORY
 		$categories->name   = $request->name;
-	
+
 		$categories->keywords    = $request->keywords;
 		$categories->description = $request->description;
 		$categories->mode   = $request->mode;
@@ -976,10 +1405,36 @@ class AdminController extends Controller
 		return redirect('panel/admin/productcategories');
 
 	}//<--- END METHOD
+>>>>>>> main
 
 	public function deleteCategories($id)
 	{
 
+<<<<<<< HEAD
+		$categories   = Categories::findOrFail($id);
+		$thumbnail    = 'public/img-category/' . $categories->image; // Path General
+
+		$userCategory = User::where('categories_id', $id)->update(['categories_id' => 0]);
+
+		// Delete Category
+		$categories->delete();
+
+		// Delete Thumbnail
+		if (\File::exists($thumbnail)) {
+			\File::delete($thumbnail);
+		} //<--- IF FILE EXISTS
+
+		return redirect('panel/admin/categories');
+	} //<--- END METHOD
+
+	public function posts(Request $request)
+	{
+		$data = Updates::orderBy('id', 'desc')->paginate(20);
+		$sort  = $request->input('sort');
+
+		if (request('sort') == 'pending') {
+			$data = Updates::whereStatus('pending')->orderBy('id', 'desc')->paginate(20);
+=======
 			$categories   = Categories::findOrFail($id);
 			$thumbnail    = 'public/img-category/'.$categories->image; // Path General
 
@@ -1022,6 +1477,7 @@ class AdminController extends Controller
 
 		if (request('sort') == 'pending') {
 			$data = Updates::whereStatus('pending')->orderBy('id','desc')->paginate(20);
+>>>>>>> main
 		}
 
 		return view('admin.posts', ['data' => $data, 'sort' => $sort]);
@@ -1029,11 +1485,19 @@ class AdminController extends Controller
 
 	public function deletePost(Request $request)
 	{
+<<<<<<< HEAD
+		$sql       = Updates::findOrFail($request->id);
+		$path      = config('path.images');
+		$pathVideo = config('path.videos');
+		$pathMusic = config('path.music');
+		$pathFile  = config('path.files');
+=======
 	  $sql       = Updates::findOrFail($request->id);
 		$path      = config('path.images');
     $pathVideo = config('path.videos');
     $pathMusic = config('path.music');
     $pathFile  = config('path.files');
+>>>>>>> main
 
 		if ($sql->status == 'pending') {
 			try {
@@ -1047,6 +1511,39 @@ class AdminController extends Controller
 
 		foreach ($files as $media) {
 
+<<<<<<< HEAD
+			if ($media->image) {
+				Storage::delete($path . $media->image);
+				$media->delete();
+			}
+
+			if ($media->video) {
+				Storage::delete($pathVideo . $media->video);
+				Storage::delete($pathVideo . $media->video_poster);
+				$media->delete();
+			}
+
+			if ($media->music) {
+				Storage::delete($pathMusic . $media->music);
+				$media->delete();
+			}
+
+			if ($media->file) {
+				Storage::delete($pathFile . $media->file);
+				$media->delete();
+			}
+
+			if ($media->video_embed) {
+				$media->delete();
+			}
+		}
+
+		// Delete Reports
+		$reports = Reports::where('report_id', $request->id)->where('type', 'update')->get();
+
+		if (isset($reports)) {
+			foreach ($reports as $report) {
+=======
       if ($media->image) {
         Storage::delete($path.$media->image);
         $media->delete();
@@ -1079,6 +1576,7 @@ class AdminController extends Controller
 
 		if(isset($reports)){
 			foreach($reports as $report){
+>>>>>>> main
 				$report->delete();
 			}
 		}
@@ -1548,7 +2046,6 @@ class AdminController extends Controller
 
 		\Session::flash('success_message', trans('admin.success_update'));
 		return back();
-
 	}
 
 	public function emailSettings(Request $request)
@@ -1568,7 +2065,6 @@ class AdminController extends Controller
 
 		\Session::flash('success_message', trans('admin.success_update'));
 		return back();
-
 	}
 
 	public function updateSocialLogin(Request $request)
@@ -1638,7 +2134,6 @@ class AdminController extends Controller
 
 		\Session::flash('success_message', trans('admin.success_update'));
 		return back();
-
 	} // End Method
 
 	public function uploadImageEditor(Request $request)
@@ -1925,7 +2420,6 @@ class AdminController extends Controller
 		$sql->save();
 
 		return back()->withSuccessMessage(trans('admin.success_update'));
-
 	}
 
 	public function pwa(Request $request)

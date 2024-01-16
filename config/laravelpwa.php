@@ -1,7 +1,11 @@
 <?php
 
 return [
+<<<<<<< HEAD
+    'name' => 'LaravelPWA',
+=======
    'name' => env('APP_NAME', 'My PWA App'),
+>>>>>>> main
     'manifest' => [
         'name' => env('PWA_SHORT_NAME'),
         'short_name' => env('PWA_SHORT_NAME'),

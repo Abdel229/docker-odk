@@ -87,7 +87,11 @@ class Helper
     if( $number >= 100000000 ) {
 		return '<span class="counterStats">'.number_format( $number/1000000, 0 ). "</span>M";
 	} else {
+<<<<<<< HEAD
+        return '<span class="counterStats">'.number_format( $number ).'</span>';
+=======
         return '<span class="counterStats">'.( $number ).'</span>';
+>>>>>>> main
     }
    }//<<<<--- End Function
 
@@ -482,16 +486,24 @@ public static function resizeImageFixed($image,$width,$height,$imageNew = null)
 
  }// END
 
+<<<<<<< HEAD
+ public static function amountGross($amount)
+=======
  public static function amountGross($amount, User $user=null)
+>>>>>>> main
  {
 	 $settings = AdminSettings::first();
 
 	 // Aplly Taxes
+<<<<<<< HEAD
+	 $isTaxable = auth()->user()->isTaxable();
+=======
 	 if($user == null)
 	 	$isTaxable = auth()->user()->isTaxable();
 	else
 		$isTaxable = $user->isTaxable();
 
+>>>>>>> main
 	 $taxes = 0;
 
 	 if ($isTaxable->count()) {
@@ -694,22 +706,48 @@ public static function resizeImageFixed($image,$width,$height,$imageNew = null)
 	}
 
 	// User wallet format
+<<<<<<< HEAD
+	public static function userWallet($balance = null)
+=======
 	public static function userWallet($balance = null,User $user=null)
+>>>>>>> main
 	{
 		$settings = AdminSettings::first();
 
 		// Get Balance current
 		if ($balance) {
 			if ($settings->wallet_format != 'real_money') {
+<<<<<<< HEAD
+ 		 	return floor(auth()->user()->wallet);
+ 		 }
+
+ 		 return auth()->user()->wallet;
+=======
  		 	return floor(($user == null)?auth()->user()->wallet:$user->wallet);
  		 }
 
  		 return ($user == null)?auth()->user()->wallet:$user->wallet;
+>>>>>>> main
 		}
 
 		// Format Wallet
 		switch ($settings->wallet_format) {
 			case 'real_money':
+<<<<<<< HEAD
+				$formatWallet = self::amountFormatDecimal(auth()->user()->wallet);
+				break;
+
+			case 'credits':
+				$formatWallet = floor(auth()->user()->wallet) .' ' . trans('general.credits');
+				break;
+
+			case 'points':
+				$formatWallet = floor(auth()->user()->wallet) .' ' . trans('general.points');
+				break;
+
+			case 'tokens':
+				$formatWallet = floor(auth()->user()->wallet) .' ' . trans('general.tokens');
+=======
 				$formatWallet = self::amountFormatDecimal(($user == null)?auth()->user()->wallet:$user->wallet);
 				break;
 
@@ -723,6 +761,7 @@ public static function resizeImageFixed($image,$width,$height,$imageNew = null)
 
 			case 'tokens':
 				$formatWallet = floor(($user == null)?auth()->user()->wallet:$user->wallet) .' ' . trans('general.tokens');
+>>>>>>> main
 				break;
 		}
 

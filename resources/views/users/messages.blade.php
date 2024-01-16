@@ -37,7 +37,13 @@
 @endsection
 
 @section('javascript')
+<<<<<<< HEAD
+<script src="{{ asset('public/js/messages.js') }}?v={{$settings->version}}"></script>
+<script src="{{ asset('public/js/fileuploader/fileuploader-msg.js') }}?v={{$settings->version}}"></script>
+<script src="{{ asset('public/js/paginator-messages.js') }}"></script>
+=======
 <script src="{{ asset('js/messages.js') }}?v={{$settings->version}}"></script>
 <script src="{{ asset('js/fileuploader/fileuploader-msg.js') }}?v={{$settings->version}}"></script>
 <script src="{{ asset('js/paginator-messages.js') }}"></script>
+>>>>>>> main
 @endsection

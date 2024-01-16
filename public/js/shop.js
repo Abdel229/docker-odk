@@ -16,8 +16,12 @@
 			 dataType : 'json',
 			 error: function(responseText, statusText, xhr, $form) {
 				element.removeAttr('disabled');
+<<<<<<< HEAD
+
+=======
 				
 				console.log(responseText);
+>>>>>>> main
 				if (! xhr) {
 					xhr = '- ' + error_occurred;
 				} else {
@@ -28,6 +32,14 @@
 					 element.find('i').removeClass('spinner-border spinner-border-sm align-middle mr-1');
 			 },
 			 success: function(result) {
+<<<<<<< HEAD
+
+			 //===== SUCCESS =====//
+			 if (result.success && result.url) {
+				 window.location.href = result.url;
+
+			 } else if (result.success && result.buyCustomContent) {
+=======
 			console.log(result);
 			 //===== SUCCESS =====//
 			if (result.success === true && result.payment === "CinetPay") {
@@ -37,6 +49,7 @@
 				 window.location.href = result.url;
 
 			} else if (result.success && result.buyCustomContent) {
+>>>>>>> main
 
 				 $('#buyNowForm').modal('hide');
 

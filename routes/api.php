@@ -2,7 +2,10 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+<<<<<<< HEAD
+=======
 use App\Http\Controllers\CinetPayPaymentController;
+>>>>>>> main
 
 /*
 |--------------------------------------------------------------------------

@@ -47,7 +47,7 @@ class SubscriptionsController extends Controller
                 'errors' => ['error' => trans('general.subscription_not_available')],
             ]);
         }
-     
+
         // Check if subscription exists
         $checkSubscription = auth()->user()->mySubscriptions()
             ->whereStripePrice($plan->name)
@@ -100,27 +100,27 @@ class SubscriptionsController extends Controller
       $creator = User::whereId($this->request->id)
           ->whereVerifiedId('yes')
             ->firstOrFail();
- 
+
       // Check if Plan exists
       $plan = $creator->plans()
         ->whereInterval($this->request->interval)
            ->firstOrFail();
- 
+
       $amount = $plan->price;
- 
+
       // Verify plan no is empty
       if (! $creator->plan) {
          $creator->plan = 'user_'.$creator->id;
          $creator->save();
       }
- 
+
       if (auth()->user()->wallet < Helper::amountGross($amount)) {
         return response()->json([
           "success" => false,
           "errors" => ['error' => __('general.not_enough_funds')]
         ]);
       }
- 
+
       // Insert DB
       $subscription              = new Subscriptions();
       $subscription->user_id     = auth()->id();
@@ -130,10 +130,10 @@ class SubscriptionsController extends Controller
       $subscription->interval = $plan->interval;
       $subscription->taxes = auth()->user()->taxesPayable();
       $subscription->save();
- 
+
       // Admin and user earnings calculation
       $earnings = $this->earningsAdminUser($creator->custom_fee, $amount, null, null);
- 
+
       // Insert Transaction
       $this->transaction(
          'subw_'.str_random(25),
@@ -148,21 +148,21 @@ class SubscriptionsController extends Controller
          $earnings['percentageApplied'],
          auth()->user()->taxesPayable()
        );
- 
+
       // Subtract user funds
       auth()->user()->decrement('wallet', Helper::amountGross($amount));
- 
+
       // Add Earnings to User
       $creator->increment('balance', $earnings['user']);
- 
+
       // Send Email to User and Notification
       Subscriptions::sendEmailAndNotify(auth()->user()->name, $creator->id);
- 
+
       return response()->json([
         'success' => true,
         'url' => url('buy/subscription/success', $creator->username)
       ]);
- 
+
     } // End sendTipWallet
 
 

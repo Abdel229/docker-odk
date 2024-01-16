@@ -309,7 +309,11 @@
                   <small><i class="fas fa-ban mr-1"></i> {{trans('general.restrict')}}</small>
                 </button>
               @endif
+<<<<<<< HEAD
+              
+=======
 
+>>>>>>> main
             </div>
           @endif
 
@@ -762,9 +766,15 @@
                     if ($payment->type == 'card' ) {
                       $paymentName = '<i class="far fa-credit-card mr-1"></i> '.trans('general.debit_credit_card').$recurrent;
                     } else if ($payment->id == 1) {
+<<<<<<< HEAD
+                      $paymentName = '<img src="'.url('public/img/payments', auth()->user()->dark_mode == 'off' ? $payment->logo : 'paypal-white.png').'" width="70"/> <small class="w-100 d-block">'.trans('general.redirected_to_paypal_website').'</small>';
+                    } else {
+                      $paymentName = '<img src="'.url('public/img/payments', $payment->logo).'" width="70"/>'.$recurrent;
+=======
                       $paymentName = '<img src="'.url('img/payments', auth()->user()->dark_mode == 'off' ? $payment->logo : 'paypal-white.png').'" width="70"/> <small class="w-100 d-block">'.trans('general.redirected_to_paypal_website').'</small>';
                     } else {
                       $paymentName = '<img src="'.url('img/payments', $payment->logo).'" width="70"/>'.$recurrent;
+>>>>>>> main
                     }
 
                     @endphp
@@ -941,7 +951,11 @@
 @section('javascript')
 
 @if (auth()->check() && auth()->id() == $user->id)
+<<<<<<< HEAD
+<script src="{{ asset('public/js/upload-avatar-cover.js') }}?v={{$settings->version}}"></script>
+=======
 <script src="{{ asset('js/upload-avatar-cover.js') }}?v={{$settings->version}}"></script>
+>>>>>>> main
 @endif
 
 <script type="text/javascript">

@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-
 use Illuminate\Http\Request;
 use App\Models\LiveStreamings;
 use App\Models\LiveOnlineUsers;
@@ -20,7 +19,6 @@ use Session;
 class LiveStreamingsController extends Controller
 {
   use Traits\Functions;
-    
   public function __construct(Request $request, AdminSettings $settings) {
     $this->request = $request;
     $this->settings = $settings::first();
@@ -63,13 +61,13 @@ class LiveStreamingsController extends Controller
         $live->price   = $this->request->price ?? 0;
         $live->availability = $this->request->availability;
         $live->save();
-        
+
         Session::put('times',strtotime(Carbon::now()->addMinutes(100)->getTimestamp()));
-        
+
         //dd(strtotime(Carbon::now()->addMinutes(200)->getTimestamp()));
        // Notify to subscribers
        event(new LiveBroadcasting(auth()->user(), $live->id));
-     
+
        return response()->json([
          'success' => true,
          'url' => url('live', auth()->user()->username)
@@ -125,7 +123,6 @@ class LiveStreamingsController extends Controller
     ->whereStatus('0')
     ->orderBy('id', 'desc')
     ->first();
-   
     // Check subscription
     $checkSubscription = auth()->user()->checkSubscription($creator);
 
@@ -188,8 +185,8 @@ class LiveStreamingsController extends Controller
     } else {
       $paymentRequiredToAccess = true;
     }
-    
-    
+
+
     if ($live && $this->settings->limit_live_streaming_paid != 0 && $live->availability != 'everyone_free') {
       $limitLiveStreaming = $this->settings->limit_live_streaming_paid - $live->TimeElapsed;
     } elseif ($live && $this->settings->limit_live_streaming_free != 0 && $live->availability == 'everyone_free') {
@@ -197,14 +194,14 @@ class LiveStreamingsController extends Controller
     } else {
       $limitLiveStreaming = false;
     }
-    
+
     $setTime = Session::get('times');
     $currentTimestamp = strtotime($setTime+3600);
     //dd($currentTimestamp);
     //$expireTimeInSeconds = ($limitLiveStreaming * 60);
     //$currentTimestamp = strtotime(now()->getTimestamp()) ;
     //$privilegeExpiredTs = $expireTimeInSeconds + $currentTimestamp;
-    $tokenx = $live == true ? RtcTokenBuilder::buildTokenWithUserAccount($this->settings->agora_app_id, $this->settings->agora_certificat, $live->channel, 0, $live->user_id == auth()->id() ? 'host' :'audience', $currentTimestamp) :""; 
+    $tokenx = $live == true ? RtcTokenBuilder::buildTokenWithUserAccount($this->settings->agora_app_id, $this->settings->agora_certificat, $live->channel, 0, $live->user_id == auth()->id() ? 'host' :'audience', $currentTimestamp) :"";
     $tokenx = $tokenx.'==';
     //dd($tokenx);
     return view('users.live', [
@@ -235,7 +232,6 @@ class LiveStreamingsController extends Controller
     ->where('updated_at', '>', now()->subMinutes(5))
     ->whereStatus('0')
     ->first();
-   
     // Limit Live Streaming (time)
     if ($live && $this->settings->limit_live_streaming_paid != 0 && $live->availability != 'everyone_free') {
       $limitLiveStreaming = $this->settings->limit_live_streaming_paid - $live->TimeElapsed;

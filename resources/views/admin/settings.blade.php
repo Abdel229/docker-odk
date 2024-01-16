@@ -1,9 +1,15 @@
 @extends('admin.layout')
 
 @section('css')
+<<<<<<< HEAD
+<link href="{{ asset('public/plugins/iCheck/all.css') }}" rel="stylesheet" type="text/css" />
+<link href="{{ asset('public/plugins/tagsinput/jquery.tagsinput.min.css') }}" rel="stylesheet" type="text/css" />
+<link href="{{ asset('public/plugins/select2/select2.min.css') }}?v={{$settings->version}}" rel="stylesheet" type="text/css" />
+=======
 <link href="{{ asset('plugins/iCheck/all.css') }}" rel="stylesheet" type="text/css" />
 <link href="{{ asset('plugins/tagsinput/jquery.tagsinput.min.css') }}" rel="stylesheet" type="text/css" />
 <link href="{{ asset('plugins/select2/select2.min.css') }}?v={{$settings->version}}" rel="stylesheet" type="text/css" />
+>>>>>>> main
 @endsection
 
 @section('content')

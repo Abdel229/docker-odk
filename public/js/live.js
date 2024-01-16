@@ -1,5 +1,8 @@
 //<--------- Messages -------//>
+<<<<<<< HEAD
+=======
 console.log('Livejs'+liveOnline);
+>>>>>>> main
 (function($) {
 	"use strict";
 

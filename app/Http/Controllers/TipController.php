@@ -19,8 +19,12 @@ use App\Models\Notifications;
 use App\Models\Conversations;
 use App\Models\Messages;
 use Yabacon\Paystack;
+<<<<<<< HEAD
+
+=======
 use App\Services\cinetpay\CinetPayService;
 use App\Models\CinepayPayment;
+>>>>>>> main
 
 class TipController extends Controller
 {
@@ -92,10 +96,13 @@ class TipController extends Controller
       case 5:
         return $this->sendTipPaystack();
         break;
+<<<<<<< HEAD
+=======
         
       case 11:
         return $this->sendCinetPay();
         break;
+>>>>>>> main
     }
 
 
@@ -210,6 +217,10 @@ class TipController extends Controller
      ]);
 
    } // End sendTipWallet
+<<<<<<< HEAD
+
+
+=======
    
    /**
 	 *  Send Tip Wallet
@@ -258,6 +269,7 @@ class TipController extends Controller
         }
     }
 // End send Tip Cinetpay
+>>>>>>> main
   /**
 	 *  Send Tip PayPal
 	 *
