@@ -41,10 +41,18 @@
 									</span>
                                 </label>
                             </div>
+                            <!-- CinetPay -->
                             <div class="custom-control custom-radio mb-3">
                                 <input  class="custom-control-input" type="radio" name="payment_gateway_ppv" value="11" id="radio11"  >
                                 <label class="custom-control-label" for="radio11">
-                                    <span><strong><img src="/public/img/payments/cinetpay.png" width="70"></strong></span>
+                                    <span><strong><img src="{{ asset('img/payments/cinetpay.png') }}" width="70"></strong></span>
+                                </label>
+                            </div>
+                            <!-- PayPal -->
+                            <div class="custom-control custom-radio mb-3">
+                                <input  class="custom-control-input" type="radio" name="payment_gateway_ppv" value="40" id="radio40"  >
+                                <label class="custom-control-label" for="radio40">
+                                    <span><strong><img src="{{ asset('img/payments/paypal.png') }}" width="70"></strong></span>
                                 </label>
                             </div>
                             @if ($product->type == 'custom')
@@ -63,14 +71,14 @@
                             @if ($product->type == 'product')
                             <div class="form-group mb-2">
                                     <input  type="number" class="form-control textareaAutoSize" name="number_product_content"
-                                            
+
                                               placeholder="{{ \Stichoza\GoogleTranslate\GoogleTranslate::trans(__('general.number_custom_content'), config("app.locale")) }}"
                                              ></input>
                             </div>
 
                             <div class="form-group mb-2">
                                     <input  type="text" class="form-control textareaAutoSize" name="city_product_content"
-   
+
                                     placeholder="{{ \Stichoza\GoogleTranslate\GoogleTranslate::trans(__('general.city_custom_content'), config("app.locale")) }}"
                                     ></input>
                          </div>
@@ -141,7 +149,7 @@
                             </div>
 
                             <div class="text-center">
-                                <button type="submit" @if (Helper::userWallet('balance') == 0) 
+                                <button type="submit" @if (Helper::userWallet('balance') == 0)
                                         @endif id="shopProductBtn" class="btn btn-primary mt-4 BuyNowBtn">
                                     <i></i> {{\Stichoza\GoogleTranslate\GoogleTranslate::trans(trans('general.pay'), config("app.locale"))}}  {{Helper::amountFormatDecimal($product->product_promo!=0?$product->price-($product->price*$product->product_promo/100):$product->price)}}
                                     <small>{{$settings->currency_code}}</small>

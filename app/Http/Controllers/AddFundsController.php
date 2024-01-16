@@ -97,7 +97,7 @@ class AddFundsController extends Controller
             ]);
         }
         try {
-                
+
             switch ($this->request->payment_gateway) {
                 case 'PayPal':
                     return $this->sendPayPal();
@@ -166,7 +166,6 @@ class AddFundsController extends Controller
         $taxesPayable = $this->settings->tax_on_wallet ? auth()->user()->taxesPayable() : null;
 
         $amountFixed = number_format($this->request->amount + ($this->request->amount * $feePayPal / 100) + $centsPayPal + $taxes, 2, '.', '');
-
         return response()->json([
             'success' => true,
             'insertBody' => '<form id="form_pp" name="_xclick" action="' . $action . '" method="post"  style="display:none">

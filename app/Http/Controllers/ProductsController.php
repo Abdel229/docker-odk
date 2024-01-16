@@ -2,23 +2,25 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\Products;
-use App\Models\ProductCategories;
-use App\Models\Purchases;
+use App\Helper;
 use App\Models\User;
+use App\Models\Products;
+use App\Models\TaxRates;
+use App\Models\Purchases;
+use Illuminate\Http\File;
+use App\Models\Withdrawals;
+use Illuminate\Http\Request;
+use App\Models\AdminSettings;
 use App\Models\MediaProducts;
 use App\Models\Notifications;
-use App\Models\AdminSettings;
-use App\Models\TaxRates;
-use App\Models\Withdrawals;
-use App\Models\ReferralTransactions;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Storage;
 use App\Notifications\NewSale;
-use Illuminate\Http\File;
+use App\Models\PaymentGateways;
 use Illuminate\Validation\Rule;
-use App\Helper;
+use App\Models\ProductCategories;
+use App\Models\ReferralTransactions;
+use Fahim\PaypalIPN\PaypalIPNListener;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 use App\Services\cinetpay\CinetPayService;
 
 class ProductsController extends Controller
@@ -41,7 +43,7 @@ class ProductsController extends Controller
    $sort = request('sort');
 
    $products = Products::with('seller:name,username,avatar')->whereStatus('1');
-  
+
    // Filter by tags
    $products->when(strlen($tags) > 2, function($q) use ($tags) {
      $q->where('tags', 'LIKE', '%'.$tags.'%');
@@ -71,7 +73,7 @@ class ProductsController extends Controller
    $products->when($sort == 'custom', function($q) {
      $q->where('type', 'custom');
    });
-   
+
    // Filter by Product Content
    $products->when($sort == 'product', function($q) {
      $q->where('type', 'product');
@@ -92,7 +94,7 @@ class ProductsController extends Controller
     ) {
      abort(404);
    }
-   
+
    return view('shop.add-product');
  }// End method create
 
@@ -138,17 +140,17 @@ class ProductsController extends Controller
 
    $input = $this->request->all();
 
- 
+
 
     $validator = Validator::make($input, [
       'name'     => 'required|min:5|max:100',
-    
+
       'description' => 'required|min:10',
       'price'       => 'required|numeric|min:'.$this->settings->min_price_product.'|max:'.$this->settings->max_price_product,
     ], $messages);
-   
 
-  
+
+
 
     if ($validator->fails()) {
          return response()->json([
@@ -169,7 +171,7 @@ class ProductsController extends Controller
      	}
     }
 
-   
+
      $product              = new Products();
      $product->user_id     = auth()->id();
      $product->name        = $this->request->name;
@@ -177,7 +179,7 @@ class ProductsController extends Controller
      $product->tags        = $this->request->tags;
      $product->description = trim(Helper::checkTextDb($this->request->description));
      $product->save();
-    
+
      // Insert Images Preview
      if ($fileuploaderPreview) {
        foreach ($fileuploaderPreview as $key => $media) {
@@ -264,7 +266,7 @@ class ProductsController extends Controller
      $currencyPosition =  null;
    }
 
-   
+
    $messages = [
    'description.required' => trans('validation.required', ['attribute' => __('general.description')]),
    'tags.required' => trans('validation.required', ['attribute' => __('general.tags')]),
@@ -286,16 +288,16 @@ class ProductsController extends Controller
    }
 
    $input = $this->request->all();
-  
+
     $validator = Validator::make($input, [
       'name'     => 'required|min:5|max:100',
       'description' => 'required|min:10',
       'price'       => 'required|numeric|min:'.$this->settings->min_price_product.'|max:'.$this->settings->max_price_product,
       'delivery_time' => 'required',
     ], $messages);
- 
-   
-   
+
+
+
     if ($validator->fails()) {
          return response()->json([
              'success' => false,
@@ -314,8 +316,8 @@ class ProductsController extends Controller
           ]);
      	}
     }
-   
-   
+
+
      $product              = new Products();
      $product->user_id     = auth()->id();
      $product->name        = $this->request->name;
@@ -325,7 +327,7 @@ class ProductsController extends Controller
      $product->tags        = $this->request->tags;
      $product->description = trim(Helper::checkTextDb($this->request->description));
      $product->save();
-     
+
      // Insert Images Preview
      if ($fileuploaderPreview) {
        foreach ($fileuploaderPreview as $key => $media) {
@@ -360,7 +362,7 @@ class ProductsController extends Controller
      $currencyPosition =  null;
    }
 
-   
+
    $messages = [
    'description.required' => trans('validation.required', ['attribute' => __('general.description')]),
    'tags.required' => trans('validation.required', ['attribute' => __('general.tags')]),
@@ -382,7 +384,7 @@ class ProductsController extends Controller
    }
 
    $input = $this->request->all();
-   
+
     $validator = Validator::make($input, [
       'name'     => 'required|min:5|max:100',
       'description' => 'required|min:10',
@@ -394,8 +396,8 @@ class ProductsController extends Controller
       'kg'          => 'numeric|min:0',
       'categorie'   => 'required|numeric'
     ], $messages);
-   
-   
+
+
     if ($validator->fails()) {
          return response()->json([
              'success' => false,
@@ -588,7 +590,7 @@ public function updates()
           'success' => true,
           'url' => url('shop/product', $product->id)
       ]);*/
-      
+
       return redirect('my/products');
 
   }// End method store
@@ -690,11 +692,11 @@ public function updates()
                   'errors' => $validator->getMessageBag()->toArray(),
               ]);
           } //<-- Validator
-          
+
 
         if($this->request->payment_gateway_ppv == "11"){
           try {
-          
+
             $data = [];
             $data["customer_name"] = auth()->user()->name;
             $data["customer_surname"] = auth()->user()->username;
@@ -730,7 +732,63 @@ public function updates()
               'errors' => "$th",
           ]);
           }
-          
+
+        }
+        if($this->request->payment_gateway_ppv == "40"){
+            try{
+                $data = [];
+                $data["customer_name"] = auth()->user()->name;
+                $data["customer_surname"] = auth()->user()->username;
+                $data["description"] = "Achat sdk";
+                $data["amount"] = $item->product_promo!=0?$item->price-($item->product_promo*$item->price/100):$item->price;
+                $data["type_operation"] = 4;
+                $data["id_product"] = $this->request->id;
+                $data["id_update"] = null;
+                $data["description_custom_content"] = ''.json_encode($this->request->description_custom_content).'';
+                $data["delivery_status"] = $item->type == 'digital' ? 'delivered' : 'pending';
+                $data["id_subscribe"] = null;
+                $data["currency"] = "XOF";
+
+                $ipn = new PaypalIPNListener();
+
+                $ipn->use_curl = false;
+
+                $payment = PaymentGateways::whereId(1)->whereName('PayPal')->firstOrFail();
+
+                if ($payment->sandbox == 'true') {
+                    // SandBox
+                    $ipn->use_sandbox = true;
+                } else {
+                    // Real environment
+                    $ipn->use_sandbox = false;
+                }
+
+                $verified = $ipn->processIpn($data);
+
+                if($verified){
+                    if($_POST['payment_status']){
+                        $url = $result["data"]["payment_url"];
+
+                return response()->json([
+                    "success" => true,
+                    "payment" => "PayPal",
+                    "data" => $result["data"]
+                ]);
+                    }
+                    else{
+                        return response()->json([
+                            "success" => false,
+                            "data" => $result,
+                        ]);
+                    }
+                }
+            }catch (\Throwable $th) {
+                return response()->json([
+                  'success' => false,
+                  'errors' => "$th",
+              ]);
+              }
+
         }
 
           if (auth()->user()->wallet < ($item->product_promo!=0?$item->price-($item->product_promo*$item->price/100):$item->price)) {
@@ -743,7 +801,7 @@ public function updates()
           "success" => false,
           "data" => "saut",
         ]);*/
-  
+
 
         // Admin and user earnings calculation
         $earnings = $this->earningsAdminUser($item->user()->custom_fee, $item->product_promo!=0?$item->price-($item->product_promo*$item->price/100):$item->price, null, null);
@@ -778,11 +836,11 @@ public function updates()
         $purchase->description_custom_content = $this->request->description_custom_content;
 
         if($item->type == 'product'){
-          
+
           $purchase->phone_number = $this->request->number_product_content;
           $purchase->city = $this->request->city_product_content;
         }
-       
+
         $purchase->save();
 
         // Send Notification to Creator
@@ -879,14 +937,14 @@ public function updates()
 
         $purchase->delivery_status = 'delivered';
         if($purchase->products()->type == 'product' &&  $this->request->partner != "" ){
-          
+
           $purchase->delivery_type = $this->request->partner == "me"? "seller":"partner";
           $purchase->save();
           return redirect('my/sales');
         }else{
 
           return redirect('my/sales');
-         
+
 
         }
         $purchase->save();

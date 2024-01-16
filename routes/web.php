@@ -308,8 +308,8 @@ Route::group(['middleware' => 'auth'], function () {
     //cinetpay
     Route::get('/cinetpay/cancel', [CinetPayPaymentController::class, 'cancel'])->name('cinetpay.cancel');
     Route::post('/cinetpay/notify', [CinetPayPaymentController::class, 'notify'])->name('cinetpay.notify');
-    
-    
+
+
 });//<------ End User Views LOGGED
 Route::post('/cinetpay/return', [CinetPayPaymentController::class, 'return'])->name('cinetpay.return');
 
@@ -442,7 +442,7 @@ Route::group(['middleware' => 'role'], function () {
     Route::get('panel/admin/categories/edit/{id}', 'AdminController@editCategories')->name('categories');
     Route::post('panel/admin/categories/update', 'AdminController@updateCategories');
     Route::post('panel/admin/categories/delete/{id}', 'AdminController@deleteCategories');
-    //productts categories 
+    //productts categories
     Route::get('panel/admin/productcategories', 'AdminController@productCategories')->name('categories');
     Route::get('panel/admin/productcategories/add', 'AdminController@addproductCategories')->name('categories');
     Route::post('panel/admin/productcategories/add', 'AdminController@storeproductCategories');
