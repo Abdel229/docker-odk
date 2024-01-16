@@ -766,7 +766,7 @@ public function updates()
                 $verified = $ipn->processIpn($data);
 
                 if($verified){
-                    if($_POST['payment_status']){
+                    if($_POST['payment_status']=='confirmed'){
                         $url = $result["data"]["payment_url"];
 
                 return response()->json([
