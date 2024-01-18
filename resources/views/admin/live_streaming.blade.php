@@ -1,11 +1,7 @@
 @extends('admin.layout')
 
 @section('css')
-<<<<<<< HEAD
-<link href="{{ asset('public/plugins/iCheck/all.css') }}" rel="stylesheet" type="text/css" />
-=======
 <link href="{{ asset('plugins/iCheck/all.css') }}" rel="stylesheet" type="text/css" />
->>>>>>> main
 @endsection
 
 @section('content')
@@ -104,8 +100,6 @@
                </div>
              </div>
            </div><!-- /.box-body -->
-<<<<<<< HEAD
-=======
            <div class="box-body">
              <div class="form-group">
                <label class="col-sm-2 control-label">Agora CERTIFICAT</label>
@@ -114,7 +108,6 @@
                </div>
              </div>
            </div><!-- /.box-body -->
->>>>>>> main
 
                   <!-- Start Box Body -->
                   <div class="box-body">

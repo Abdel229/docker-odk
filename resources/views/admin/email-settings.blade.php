@@ -1,11 +1,7 @@
 @extends('admin.layout')
 
 @section('css')
-<<<<<<< HEAD
-<link href="{{ asset('public/plugins/select2/select2.min.css') }}" rel="stylesheet" type="text/css" />
-=======
 <link href="{{ asset('plugins/select2/select2.min.css') }}" rel="stylesheet" type="text/css" />
->>>>>>> main
 @endsection
 
 @section('content')

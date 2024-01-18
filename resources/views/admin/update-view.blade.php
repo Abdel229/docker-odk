@@ -38,11 +38,7 @@
 					  <!-- start -->
 					  <dt>{{ trans('general.image') }}</dt>
 					  <dd>@if($data->image !== '')
-<<<<<<< HEAD
-            <img src="{{asset('public/updates/images').'/'.$data->image}}" width="500" />
-=======
             <img src="{{asset('updates/images').'/'.$data->image}}" width="500" />
->>>>>>> main
           @else
             {{ trans('general.no') }}
           @endif</dd>

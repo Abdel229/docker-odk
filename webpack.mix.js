@@ -1,8 +1,5 @@
 const mix = require('laravel-mix');
-<<<<<<< HEAD
-=======
 const { VueLoaderPlugin } = require('vue-loader')
->>>>>>> main
 
 /*
  |--------------------------------------------------------------------------
@@ -15,11 +12,6 @@ const { VueLoaderPlugin } = require('vue-loader')
  |
  */
 
-<<<<<<< HEAD
-mix.js('resources/js/app.js', 'public/js')
-    .sass('resources/sass/app.scss', 'public/css');
-=======
 
  mix.js('resources/js/app.js', 'public/js').vue()
  .sass('resources/sass/app.scss', 'public/css')
->>>>>>> main

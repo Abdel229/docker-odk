@@ -257,10 +257,7 @@ return [
         'Transactions' => App\Models\Transactions::class,
         'FFMpeg' => ProtoneMedia\LaravelFFMpeg\Support\FFMpeg::class,
         'Rave' => KingFlamez\Rave\Facades\Rave::class,
-<<<<<<< HEAD
-=======
         'GoogleTranslate' => \Stichoza\GoogleTranslate\GoogleTranslate::class
->>>>>>> main
 
     ],
 

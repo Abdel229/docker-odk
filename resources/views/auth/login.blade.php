@@ -7,11 +7,7 @@
     <div class="container pt-lg-md">
       <div class="row">
         <div class="col-lg-7">
-<<<<<<< HEAD
-          <img src="{{url('public/img', $settings->home_index)}}" class="img-center img-fluid d-lg-block d-none">
-=======
           <img src="{{url('img', $settings->home_index)}}" class="img-center img-fluid d-lg-block d-none">
->>>>>>> main
         </div>
         <div class="col-lg-5">
           <div class="card bg-white shadow border-0">
@@ -48,11 +44,7 @@
 
                   @if ($settings->google_login == 'on')
                   <a href="{{url('oauth/google')}}" class="btn btn-google auth-form-btn flex-grow w-100">
-<<<<<<< HEAD
-                    <img src="{{ url('public/img/google.svg') }}" class="mr-2" width="18" height="18"> {{ __('auth.login_with') }} Google
-=======
                     <img src="{{ url('img/google.svg') }}" class="mr-2" width="18" height="18"> {{ __('auth.login_with') }} Google
->>>>>>> main
                   </a>
                 @endif
                 </div>

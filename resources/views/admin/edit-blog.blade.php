@@ -1,11 +1,7 @@
 @extends('admin.layout')
 
 @section('css')
-<<<<<<< HEAD
-<link href="{{ asset('public/plugins/iCheck/all.css') }}" rel="stylesheet" type="text/css" />
-=======
 <link href="{{ asset('plugins/iCheck/all.css') }}" rel="stylesheet" type="text/css" />
->>>>>>> main
 @endsection
 
 @section('content')
@@ -109,9 +105,5 @@
 @endsection
 
 @section('javascript')
-<<<<<<< HEAD
-<script src="{{ asset('public/admin/js/ckeditor-init.js')}}?v={{$settings->version}}"></script>
-=======
 <script src="{{ asset('admin/js/ckeditor-init.js')}}?v={{$settings->version}}"></script>
->>>>>>> main
 @endsection

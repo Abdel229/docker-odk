@@ -1,13 +1,3 @@
-<<<<<<< HEAD
-<link href="{{ asset('public/css/core.min.css') }}?v={{$settings->version}}" rel="stylesheet">
-<link href="{{ asset('public/css/feather.css') }}" rel="stylesheet">
-<link href="{{ asset('public/css/bootstrap-icons.css') }}?v={{$settings->version}}" rel="stylesheet">
-<link href="{{ asset('public/css/icomoon.css') }}" rel="stylesheet">
-@auth
-<link href="{{ asset('public/js/fileuploader/font/font-fileuploader.css')}}" media="all" rel="stylesheet" type="text/css" />
-<link href="{{ asset('public/js/fileuploader/jquery.fileuploader.min.css')}}" media="all" rel="stylesheet" type="text/css" />
-<link href="{{ asset('public/js/fileuploader/jquery.fileuploader-theme-thumbnails.css')}}" media="all" rel="stylesheet" type="text/css" />
-=======
 <link href="{{ asset('css/core.min.css') }}?v={{$settings->version}}" rel="stylesheet">
 <link href="{{ asset('css/feather.css') }}" rel="stylesheet">
 <link href="{{ asset('css/bootstrap-icons.css') }}?v={{$settings->version}}" rel="stylesheet">
@@ -16,20 +6,10 @@
 <link href="{{ asset('js/fileuploader/font/font-fileuploader.css')}}" media="all" rel="stylesheet" type="text/css" />
 <link href="{{ asset('js/fileuploader/jquery.fileuploader.min.css')}}" media="all" rel="stylesheet" type="text/css" />
 <link href="{{ asset('js/fileuploader/jquery.fileuploader-theme-thumbnails.css')}}" media="all" rel="stylesheet" type="text/css" />
->>>>>>> main
 @endauth
 
 
 @if (auth()->check() && auth()->user()->dark_mode == 'on')
-<<<<<<< HEAD
-  <link href="{{ asset('public/css/bootstrap-dark.min.css') }}" rel="stylesheet">
-@else
-  <link href="{{ asset('public/css/bootstrap.min.css') }}" rel="stylesheet">
-@endif
-
-<link href="{{ asset('public/css/styles.css') }}?v={{$settings->version}}" rel="stylesheet">
-<link href="{{ asset('public/js/plyr/plyr.css')}}?v={{$settings->version}}" rel="stylesheet" type="text/css" />
-=======
   <link href="{{ asset('css/bootstrap-dark.min.css') }}" rel="stylesheet">
 @else
   <link href="{{ asset('css/bootstrap.min.css') }}" rel="stylesheet">
@@ -37,7 +17,6 @@
 
 <link href="{{ asset('css/styles.css') }}?v={{$settings->version}}" rel="stylesheet">
 <link href="{{ asset('js/plyr/plyr.css')}}?v={{$settings->version}}" rel="stylesheet" type="text/css" />
->>>>>>> main
 
 <script type="text/javascript">
 // Global variables
@@ -304,11 +283,7 @@ a.social-share i {color: #dedede!important;}
 @endif
 
 .bg-gradient {
-<<<<<<< HEAD
-  background: url('{{url('public/img', $settings->bg_gradient)}}');
-=======
   background: url('{{url('img', $settings->bg_gradient)}}');
->>>>>>> main
   background-size: cover;
 }
 
@@ -379,13 +354,8 @@ color:grey;
 }
 
 ::selection{ background-color: {{$settings->color_default}}; color: white; }
-<<<<<<< HEAD
-::moz-selection{ background-color: {{$settings->color_default}}; color: white; }
-::webkit-selection{ background-color: {{$settings->color_default}}; color: white; }
-=======
 ::-moz-selection{ background-color: {{$settings->color_default}}; color: white; }
 {{--::webkit-selection{ background-color: {{$settings->color_default}}; color: white; }--}}
->>>>>>> main
 
 body a,
 a:hover,
@@ -721,11 +691,7 @@ input[type=number] {
   50% {
     background-color: var(--color-pulse-media-wrapper);
   }
-<<<<<<< HEAD
-  100 {
-=======
   100% {
->>>>>>> main
     background-color: var(--color-media-wrapper);
   }
 }
@@ -1324,11 +1290,7 @@ border-color: #adb5bd !important;
   50% {
     background-color: #ff0000b0;
   }
-<<<<<<< HEAD
-  100 {
-=======
   100% {
->>>>>>> main
     background-color: #ff0000;
   }
 }
@@ -1537,11 +1499,7 @@ border-color: #adb5bd !important;
 @auth
 .preview-shop .fileuploader {
   display: block;
-<<<<<<< HEAD
-  background: @if (auth()->user()->dark_mode == 'on') #414141 !important; @else #fafbfd !important; @endif;
-=======
   background: @if (auth()->user()->dark_mode == 'on') #414141 !important @else #fafbfd !important @endif;
->>>>>>> main
 }
 @if (auth()->user()->dark_mode == 'on')
 .file-shop .fileuploader-input-caption {

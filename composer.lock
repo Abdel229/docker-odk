@@ -4,11 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-<<<<<<< HEAD
     "content-hash": "11612e01c2e2fabd84b240b01a0c01fc",
-=======
-    "content-hash": "fc37925bfd475fb30d066ce39797d4ed",
->>>>>>> main
     "packages": [
         {
             "name": "albertcht/invisible-recaptcha",
@@ -197,7 +193,6 @@
         },
         {
             "name": "aws/aws-crt-php",
-<<<<<<< HEAD
             "version": "v1.0.2",
             "source": {
                 "type": "git",
@@ -208,18 +203,6 @@
                 "type": "zip",
                 "url": "https://api.github.com/repos/awslabs/aws-crt-php/zipball/3942776a8c99209908ee0b287746263725685732",
                 "reference": "3942776a8c99209908ee0b287746263725685732",
-=======
-            "version": "v1.0.4",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/awslabs/aws-crt-php.git",
-                "reference": "f5c64ee7c5fce196e2519b3d9b7138649efe032d"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/awslabs/aws-crt-php/zipball/f5c64ee7c5fce196e2519b3d9b7138649efe032d",
-                "reference": "f5c64ee7c5fce196e2519b3d9b7138649efe032d",
->>>>>>> main
                 "shasum": ""
             },
             "require": {

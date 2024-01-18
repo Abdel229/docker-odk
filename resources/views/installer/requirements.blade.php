@@ -1,14 +1,4 @@
 <!DOCTYPE html>
-<<<<<<< HEAD
-<html>
-  <head>
-    <meta charset="UTF-8">
-    <title>Installer</title>
-    <link href="{{ asset('public/css/core.min.css') }}" rel="stylesheet">
-    <link href="{{ asset('public/css/bootstrap.min.css') }}" rel="stylesheet">
-    <link href="{{ asset('public/css/styles.css') }}" rel="stylesheet">
-    <link rel="shortcut icon" href="{{ url('public/img/favicon.png') }}" />
-=======
 <html lang="{{ config("app.locale") }}">
   <head>
     <meta charset="UTF-8">
@@ -17,7 +7,6 @@
     <link href="{{ asset('css/bootstrap.min.css') }}" rel="stylesheet">
     <link href="{{ asset('css/styles.css') }}" rel="stylesheet">
     <link rel="shortcut icon" href="{{ url('img/favicon.png') }}" />
->>>>>>> main
   </head>
   <body class="bg-primary">
   		<main role="main">
