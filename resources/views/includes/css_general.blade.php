@@ -396,8 +396,8 @@ a.text-primary.btnBookmark:hover, a.text-primary.btnBookmark:focus {
 .owl-theme .owl-dots .owl-dot.active span,
 .owl-theme .owl-dots .owl-dot:hover span
  {
-    background-color: {{$settings->color_default}};
-    border-color: {{$settings->color_default}};
+    /* background-color: {{$settings->color_default}};
+    border-color: {{$settings->color_default}}; */
 }
 .bg-primary,
 .dropdown-item:focus,

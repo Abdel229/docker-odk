@@ -44,7 +44,7 @@
                             <div class="custom-control custom-radio mb-3">
                                 <input  class="custom-control-input" type="radio" name="payment_gateway_ppv" value="11" id="radio11"  >
                                 <label class="custom-control-label" for="radio11">
-                                    <span><strong><img src="/public/img/payments/cinetpay.png" width="70"></strong></span>
+                                    <span><strong><img src="img/payments/cinetpay.png" width="70"></strong></span>
                                 </label>
                             </div>
                             @if ($product->type == 'custom')

@@ -149,9 +149,9 @@ class AddFundsController extends Controller
 
         // Verify environment Sandbox or Live
         if ($payment->sandbox == 'true') {
-            $action = "https://www.sandbox.paypal.com/cgi-bin/webscr";
+            $action = "https://ipnpb.sandbox.paypal.com/cgi-bin/webscr";
         } else {
-            $action = "https://www.paypal.com/cgi-bin/webscr";
+            $action = "https://ipnpb.paypal.com/cgi-bin/webscr";
         }
 
         $urlSuccess = route('paymentProcess');
@@ -170,15 +170,15 @@ class AddFundsController extends Controller
             'success' => true,
             'insertBody' => '<form id="form_pp" name="_xclick" action="' . $action . '" method="post"  style="display:none">
                   <input type="hidden" name="cmd" value="_xclick">
-                  <input type="hidden" name="return" value="' . $urlSuccess . '">
-                  <input type="hidden" name="cancel_return"   value="' . $urlCancel . '">
-                  <input type="hidden" name="notify_url" value="' . $urlPaypalIPN . '">
-                  <input type="hidden" name="currency_code" value="' . $this->settings->currency_code . '">
-                  <input type="hidden" name="amount" id="amount" value="' . $amountFixed . '">
+                  <input type="hidden" name="return" value="'.$urlSuccess.'">
+                  <input type="hidden" name="cancel_return"   value="'.$urlCancel.'">
+                  <input type="hidden" name="notify_url" value="'.$urlPaypalIPN.'">
+                  <input type="hidden" name="currency_code" value="'.$this->settings->currency_code.'">
+                  <input type="hidden" name="amount" id="amount" value="'.$amountFixed.'">
                   <input type="hidden" name="no_shipping" value="1">
                   <input type="hidden" name="custom" value="id=' . auth()->user()->id . '&amount=' . $this->request->amount . '&taxes=' . $taxesPayable . '">
                   <input type="hidden" name="item_name" value="' . __('general.add_funds') . ' @' . auth()->user()->username . '">
-                  <input type="hidden" name="business" value="' . $payment->email . '">
+                  <input type="hidden" name="business" value="'.$payment->email.'">
                   <input type="submit">
                   </form> <script type="text/javascript">document._xclick.submit();</script>',
         ]);
@@ -678,7 +678,6 @@ class AddFundsController extends Controller
      */
     public function paypalIpn()
     {
-
         $ipn = new PaypalIPNListener();
 
         $ipn->use_curl = false;

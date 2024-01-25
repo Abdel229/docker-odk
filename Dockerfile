@@ -15,7 +15,7 @@ COPY . .
 
 # Installez les dépendances de Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-RUN composer install --no-scripts
+##RUN composer install --no-scripts
 
 # Générez la clé d'application Laravel
 RUN php artisan key:generate

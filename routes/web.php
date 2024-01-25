@@ -135,6 +135,8 @@ Route::post('paypal/ppv/ipn', 'PayPerViewController@paypalPPVIpn');
  | User Views LOGGED
  |--------- -------------------------
  */
+    Route::post('add/funds', 'AddFundsController@send')->name("add.funds");
+
 Route::group(['middleware' => 'auth'], function () {
 
     // Dashboard
@@ -155,7 +157,7 @@ Route::group(['middleware' => 'auth'], function () {
 
     // Comments
     Route::post('ajax/delete-comment/{id}', 'CommentsController@destroy');
-    Route::post('comment/store', 'CommentsController@store');
+    Route::post('comment/store', 'CommentsContsettings/payout/methodroller@store');
 
     // Settings Page
     Route::get('settings/page', 'UserController@settingsPage');
@@ -287,7 +289,6 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('my/cards', 'UserController@myCards');
 
     // Add Funds
-    Route::post('add/funds', 'AddFundsController@send')->name("add.funds");
 
     // Send Tips
     Route::post('send/tip', 'TipController@send');

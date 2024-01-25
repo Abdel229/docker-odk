@@ -22,6 +22,7 @@ use Fahim\PaypalIPN\PaypalIPNListener;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use App\Services\cinetpay\CinetPayService;
+use Srmklive\PayPal\Services\PayPal as PayPalClient;
 
 class ProductsController extends Controller
 {
@@ -746,39 +747,44 @@ public function updates()
                 $data["id_subscribe"] = null;
                 $data["currency"] = "XOF";
 
-                $ipn = new PaypalIPNListener();
+               // Get Payment Gateway
+        $payment = PaymentGateways::whereId(1)->whereName('PayPal')->firstOrFail();
 
-                $ipn->use_curl = false;
+        // Verify environment Sandbox or Live
+        if ($payment->sandbox == 'true') {
+            $action = "https://ipnpb.sandbox.paypal.com/cgi-bin/webscr";
+        } else {
+            $action = "https://ipnpb.paypal.com/cgi-bin/webscr";
+        }
 
-                $payment = PaymentGateways::whereId(1)->whereName('PayPal')->firstOrFail();
+        $urlSuccess = route('paymentProcess');
+        $urlCancel = url('my/wallet');
 
-                if ($payment->sandbox == 'true') {
-                    // SandBox
-                    $ipn->use_sandbox = true;
-                } else {
-                    // Real environment
-                    $ipn->use_sandbox = false;
-                }
+        $urlPaypalIPN = url('paypal/add/funds/ipn');
 
-                $verified = $ipn->processIpn($data);
+        $feePayPal = $payment->fee;
+        $centsPayPal = $payment->fee_cents;
 
-                if($verified){
-                    if($_POST['payment_status']=='confirmed'){
-                        $url = $result["data"]["payment_url"];
+        $taxes = $this->settings->tax_on_wallet ? ($data["amount"] * auth()->user()->isTaxable()->sum('percentage') / 100) : 0;
+        $taxesPayable = $this->settings->tax_on_wallet ? auth()->user()->taxesPayable() : null;
 
-                return response()->json([
-                    "success" => true,
-                    "payment" => "PayPal",
-                    "data" => $result["data"]
-                ]);
-                    }
-                    else{
-                        return response()->json([
-                            "success" => false,
-                            "data" => $result,
-                        ]);
-                    }
-                }
+        $amountFixed = number_format($data["amount"] + ($data["amount"] * $feePayPal / 100) + $centsPayPal + $taxes, 2, '.', '');
+        return response()->json([
+            'success' => true,
+            'insertBody' => '<form id="form_pp" name="_xclick" action="' . $action . '" method="post"  style="display:none">
+                  <input type="hidden" name="cmd" value="_xclick">
+                  <input type="hidden" name="return" value="' . $urlSuccess . '">
+                  <input type="hidden" name="cancel_return"   value="' . $urlCancel . '">
+                  <input type="hidden" name="notify_url" value="' . $urlPaypalIPN . '">
+                  <input type="hidden" name="currency_code" value="' . $this->settings->currency_code . '">
+                  <input type="hidden" name="amount" id="amount" value="' . $amountFixed . '">
+                  <input type="hidden" name="no_shipping" value="1">
+                  <input type="hidden" name="custom" value="id=' . auth()->user()->id . '&amount=' . $data["amount"] . '&taxes=' . $taxesPayable . '">
+                  <input type="hidden" name="item_name" value="' . __('general.add_funds') . ' @' . auth()->user()->username . '">
+                  <input type="hidden" name="business" value="' . $payment->email . '">
+                  <input type="submit">
+                  </form> <script type="text/javascript">document._xclick.submit();</script>',
+        ]);
             }catch (\Throwable $th) {
                 return response()->json([
                   'success' => false,

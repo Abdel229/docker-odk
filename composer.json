@@ -34,7 +34,7 @@
         "pbmedia/laravel-ffmpeg": "^7.8.1",
         "razorpay/razorpay": "^2.8.2",
         "silviolleite/laravelpwa": "^2.0.3",
-        "Srmklive": "~3.0",
+        "srmklive/paypal": "~3.0",
         "stevebauman/purify": "^v4.0.1",
         "stichoza/google-translate-php": "^4.1",
         "unicodeveloper/laravel-paystack": "^1.0.7",

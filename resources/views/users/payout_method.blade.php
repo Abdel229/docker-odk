@@ -116,98 +116,98 @@
                             <!--============ END PAYPAL ============-->
                         @endif
 
-                        {{--                        @if( $settings->payout_method_paypal == 'on' )--}}
-                        {{--                        <!--============ START PAYPAL ============-->--}}
-                        {{--                            <div class="custom-control custom-radio mb-3">--}}
-                        {{--                                <input name="payment_gateway" value="CinetPay" id="radio1" class="custom-control-input"--}}
-                        {{--                                       @if (auth()->user()->payment_gateway == 'CinetPay') checked @endif type="radio">--}}
-                        {{--                                <label class="custom-control-label" for="radio1">--}}
-                        {{--                                    <span><img--}}
-                        {{--                                            src="{{ url('img/payments/cinetpay.png') }}"--}}
-                        {{--                                            width="70" alt=""/></span>--}}
-                        {{--                                    <small--}}
-                        {{--                                        class="w-100 d-block">* {{\Stichoza\GoogleTranslate\GoogleTranslate::trans(trans('general.processor_fees_may_apply'), config("app.locale"))}}</small>--}}
-                        {{--                                </label>--}}
-                        {{--                            </div>--}}
+{{--                                                @if( $settings->payout_method_paypal == 'on' )--}}
+{{--                                                <!--============ START PAYPAL ============-->--}}
+{{--                                                    <div class="custom-control custom-radio mb-3">--}}
+{{--                                                        <input name="payment_gateway" value="CinetPay" id="radio1" class="custom-control-input"--}}
+{{--                                                               @if (auth()->user()->payment_gateway == 'CinetPay') checked @endif type="radio">--}}
+{{--                                                        <label class="custom-control-label" for="radio1">--}}
+{{--                                                            <span><img--}}
+{{--                                                                    src="{{ url('img/payments/cinetpay.png') }}"--}}
+{{--                                                                    width="70" alt=""/></span>--}}
+{{--                                                            <small--}}
+{{--                                                                class="w-100 d-block">* {{\Stichoza\GoogleTranslate\GoogleTranslate::trans(trans('general.processor_fees_may_apply'), config("app.locale"))}}</small>--}}
+{{--                                                        </label>--}}
+{{--                                                    </div>--}}
 
-                        {{--                            <form method="POST" action="{{ url('settings/payout/method/cinetpay') }}" id="CinetPay"--}}
-                        {{--                                  @if (auth()->user()->payment_gateway != 'CinetPay') class="display-none" @endif>--}}
-                        {{--                                @csrf--}}
+{{--                                                    <form method="POST" action="{{ url('settings/payout/method/cinetpay') }}" id="CinetPay"--}}
+{{--                                                          @if (auth()->user()->payment_gateway != 'CinetPay') class="display-none" @endif>--}}
+{{--                                                        @csrf--}}
 
-                        {{--                                <div class="form-group">--}}
-                        {{--                                    <div class="input-group mb-4">--}}
-                        {{--                                        <div class="input-group-prepend">--}}
-                        {{--                                            <span class="input-group-text"><i class="fab fa-paypal"></i></span>--}}
-                        {{--                                        </div>--}}
-                        {{--                                        <input class="form-control" name="email_paypal"--}}
-                        {{--                                               value="{{auth()->user()->paypal_account == '' ? old('email_paypal') : auth()->user()->paypal_account}}"--}}
-                        {{--                                               placeholder="{{\Stichoza\GoogleTranslate\GoogleTranslate::trans(trans('general.email_paypal'), config("app.locale"))}}"--}}
-                        {{--                                               required type="email">--}}
-                        {{--                                    </div>--}}
-                        {{--                                </div>--}}
+{{--                                                        <div class="form-group">--}}
+{{--                                                            <div class="input-group mb-4">--}}
+{{--                                                                <div class="input-group-prepend">--}}
+{{--                                                                    <span class="input-group-text"><i class="fab fa-paypal"></i></span>--}}
+{{--                                                                </div>--}}
+{{--                                                                <input class="form-control" name="email_paypal"--}}
+{{--                                                                       value="{{auth()->user()->paypal_account == '' ? old('email_paypal') : auth()->user()->paypal_account}}"--}}
+{{--                                                                       placeholder="{{\Stichoza\GoogleTranslate\GoogleTranslate::trans(trans('general.email_paypal'), config("app.locale"))}}"--}}
+{{--                                                                       required type="email">--}}
+{{--                                                            </div>--}}
+{{--                                                        </div>--}}
 
-                        {{--                                <div class="form-group">--}}
-                        {{--                                    <div class="input-group mb-4">--}}
-                        {{--                                        <div class="input-group-prepend">--}}
-                        {{--                                            <span class="input-group-text"><i class="far fa-envelope"></i></span>--}}
-                        {{--                                        </div>--}}
-                        {{--                                        <input class="form-control" name="email_paypal_confirmation"--}}
-                        {{--                                               placeholder="{{\Stichoza\GoogleTranslate\GoogleTranslate::trans(trans('general.confirm_email_paypal'), config("app.locale"))}}"--}}
-                        {{--                                               required type="email">--}}
-                        {{--                                    </div>--}}
-                        {{--                                </div>--}}
-                        {{--                                <button class="btn btn-1 btn-success btn-block"--}}
-                        {{--                                        type="submit">{{\Stichoza\GoogleTranslate\GoogleTranslate::trans(trans('general.save_payout_method'), config("app.locale"))}}</button>--}}
-                        {{--                            </form>--}}
-                        {{--                            <!--============ END PAYPAL ============-->--}}
-                        {{--                        @endif--}}
-                        {{--                        @if( $settings->payout_method_payoneer == 'on' )--}}
-                        {{--                        <!--============ START PAYONEER ============-->--}}
-                        {{--                            <div class="custom-control custom-radio mb-3 mt-3">--}}
-                        {{--                                <input name="payment_gateway" value="Payoneer" id="radio2" class="custom-control-input"--}}
-                        {{--                                       @if (auth()->user()->payment_gateway == 'Payoneer') checked @endif type="radio">--}}
-                        {{--                                <label class="custom-control-label" for="radio2">--}}
-                        {{--                                    <span><img--}}
-                        {{--                                            src="{{url('img/payments', auth()->user()->dark_mode == 'off' ? 'payoneer.png' : 'payoneer-white.png')}}"--}}
-                        {{--                                            width="110" alt=""/></span>--}}
-                        {{--                                    <small--}}
-                        {{--                                        class="w-100 d-block">* {{\Stichoza\GoogleTranslate\GoogleTranslate::trans(trans('general.processor_fees_may_apply'), config("app.locale"))}}</small>--}}
-                        {{--                                </label>--}}
-                        {{--                            </div>--}}
+{{--                                                        <div class="form-group">--}}
+{{--                                                            <div class="input-group mb-4">--}}
+{{--                                                                <div class="input-group-prepend">--}}
+{{--                                                                    <span class="input-group-text"><i class="far fa-envelope"></i></span>--}}
+{{--                                                                </div>--}}
+{{--                                                                <input class="form-control" name="email_paypal_confirmation"--}}
+{{--                                                                       placeholder="{{\Stichoza\GoogleTranslate\GoogleTranslate::trans(trans('general.confirm_email_paypal'), config("app.locale"))}}"--}}
+{{--                                                                       required type="email">--}}
+{{--                                                            </div>--}}
+{{--                                                        </div>--}}
+{{--                                                        <button class="btn btn-1 btn-success btn-block"--}}
+{{--                                                                type="submit">{{\Stichoza\GoogleTranslate\GoogleTranslate::trans(trans('general.save_payout_method'), config("app.locale"))}}</button>--}}
+{{--                                                    </form>--}}
+{{--                                                    <!--============ END PAYPAL ============-->--}}
+{{--                                                @endif--}}
+{{--                                                @if( $settings->payout_method_payoneer == 'on' )--}}
+{{--                                                <!--============ START PAYONEER ============-->--}}
+{{--                                                    <div class="custom-control custom-radio mb-3 mt-3">--}}
+{{--                                                        <input name="payment_gateway" value="Payoneer" id="radio2" class="custom-control-input"--}}
+{{--                                                               @if (auth()->user()->payment_gateway == 'Payoneer') checked @endif type="radio">--}}
+{{--                                                        <label class="custom-control-label" for="radio2">--}}
+{{--                                                            <span><img--}}
+{{--                                                                    src="{{url('img/payments', auth()->user()->dark_mode == 'off' ? 'payoneer.png' : 'payoneer-white.png')}}"--}}
+{{--                                                                    width="110" alt=""/></span>--}}
+{{--                                                            <small--}}
+{{--                                                                class="w-100 d-block">* {{\Stichoza\GoogleTranslate\GoogleTranslate::trans(trans('general.processor_fees_may_apply'), config("app.locale"))}}</small>--}}
+{{--                                                        </label>--}}
+{{--                                                    </div>--}}
 
-                        {{--                            <form method="POST" action="{{ url('settings/payout/method/payoneer') }}" id="Payoneer"--}}
-                        {{--                                  @if (auth()->user()->payment_gateway != 'Payoneer') class="display-none" @endif>--}}
-                        {{--                                @csrf--}}
+{{--                                                    <form method="POST" action="{{ url('settings/payout/method/payoneer') }}" id="Payoneer"--}}
+{{--                                                          @if (auth()->user()->payment_gateway != 'Payoneer') class="display-none" @endif>--}}
+{{--                                                        @csrf--}}
 
-                        {{--                                <div class="form-group">--}}
-                        {{--                                    <div class="input-group mb-4">--}}
-                        {{--                                        <div class="input-group-prepend">--}}
-                        {{--                                            <span class="input-group-text"><i class="far fa-envelope"></i></span>--}}
-                        {{--                                        </div>--}}
-                        {{--                                        <input class="form-control" name="email_payoneer"--}}
-                        {{--                                               value="{{auth()->user()->payoneer_account == '' ? old('email_payoneer') : auth()->user()->payoneer_account}}"--}}
-                        {{--                                               placeholder="{{\Stichoza\GoogleTranslate\GoogleTranslate::trans(trans('general.email_payoneer'), config("app.locale"))}}"--}}
-                        {{--                                               required type="email">--}}
-                        {{--                                    </div>--}}
-                        {{--                                </div>--}}
+{{--                                                        <div class="form-group">--}}
+{{--                                                            <div class="input-group mb-4">--}}
+{{--                                                                <div class="input-group-prepend">--}}
+{{--                                                                    <span class="input-group-text"><i class="far fa-envelope"></i></span>--}}
+{{--                                                                </div>--}}
+{{--                                                                <input class="form-control" name="email_payoneer"--}}
+{{--                                                                       value="{{auth()->user()->payoneer_account == '' ? old('email_payoneer') : auth()->user()->payoneer_account}}"--}}
+{{--                                                                       placeholder="{{\Stichoza\GoogleTranslate\GoogleTranslate::trans(trans('general.email_payoneer'), config("app.locale"))}}"--}}
+{{--                                                                       required type="email">--}}
+{{--                                                            </div>--}}
+{{--                                                        </div>--}}
 
-                        {{--                                <div class="form-group">--}}
-                        {{--                                    <div class="input-group mb-4">--}}
-                        {{--                                        <div class="input-group-prepend">--}}
-                        {{--                                            <span class="input-group-text"><i class="far fa-envelope"></i></span>--}}
-                        {{--                                        </div>--}}
-                        {{--                                        <input class="form-control" name="email_payoneer_confirmation"--}}
-                        {{--                                               placeholder="{{\Stichoza\GoogleTranslate\GoogleTranslate::trans(trans('general.confirm_email_payoneer'), config("app.locale"))}}"--}}
-                        {{--                                               required type="email">--}}
-                        {{--                                    </div>--}}
-                        {{--                                </div>--}}
-                        {{--                                <button class="btn btn-1 btn-success btn-block"--}}
-                        {{--                                        type="submit">{{\Stichoza\GoogleTranslate\GoogleTranslate::trans(trans('general.save_payout_method'), config("app.locale"))}}</button>--}}
-                        {{--                            </form>--}}
-                        {{--                            <!--============ END PAYONEER ============-->--}}
-                        {{--                        @endif--}}
+{{--                                                        <div class="form-group">--}}
+{{--                                                            <div class="input-group mb-4">--}}
+{{--                                                                <div class="input-group-prepend">--}}
+{{--                                                                    <span class="input-group-text"><i class="far fa-envelope"></i></span>--}}
+{{--                                                                </div>--}}
+{{--                                                                <input class="form-control" name="email_payoneer_confirmation"--}}
+{{--                                                                       placeholder="{{\Stichoza\GoogleTranslate\GoogleTranslate::trans(trans('general.confirm_email_payoneer'), config("app.locale"))}}"--}}
+{{--                                                                       required type="email">--}}
+{{--                                                            </div>--}}
+{{--                                                        </div>--}}
+{{--                                                        <button class="btn btn-1 btn-success btn-block"--}}
+{{--                                                                type="submit">{{\Stichoza\GoogleTranslate\GoogleTranslate::trans(trans('general.save_payout_method'), config("app.locale"))}}</button>--}}
+{{--                                                    </form>--}}
+{{--                                                    <!--============ END PAYONEER ============-->--}}
+{{--                                                @endif--}}
 
-                        @if( $settings->payout_method_zelle == 'on' )
+{{--                        @if( $settings->payout_method_zelle == 'on' )--}}
                         <!--============ START ZELLE ============-->
                             <div class="custom-control custom-radio mb-3 mt-3">
                                 <input name="payment_gateway" value="CinetPay" id="radio3" class="custom-control-input"
@@ -261,7 +261,7 @@
                                         type="submit">{{\Stichoza\GoogleTranslate\GoogleTranslate::trans(trans('general.save_payout_method'), config("app.locale"))}}</button>
                             </form>
                             <!--============ END ZELLE ============-->
-                        @endif
+{{--                        @endif--}}
 
                         @if( $settings->payout_method_bank == 'on' )
                         <!--============ START BANK TRANSFER ============-->
