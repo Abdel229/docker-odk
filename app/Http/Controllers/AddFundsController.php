@@ -189,45 +189,47 @@ class AddFundsController extends Controller
     } // sendPayPal
 
     protected function myOmniPaypal(){
+        $payment = PaymentGateways::whereId(1)->whereName('PayPal')->firstOrFail();
         $gateway = Omnipay::create('PayPal_Rest');
         $gateway->initialize(array(
             'clientId' => 'Ae0-Tf384ndHUzGy7-_2d_ValPdALN0gBfU9Rb00AYGTVN3fmadPTmrGsOcCfkDf72unfNRfNZt3azuP',
             'secret'   => 'EPYbZHi8XRq1wqf2E8Us4CY-35jtWGbcjPXrbRxTOr68bitt7gOCzpioU_gmHqEMQHEAdDmkMRFQDhoB',
-            'testMode' => true, // Or false when you are ready for live transactions
+            'testMode' => $payment->sandbox?true:false, // Or false when you are ready for live transactions
         ));
+        $feePayPal = $payment->fee;
+        $centsPayPal = $payment->fee_cents;
+
+        $taxes = $this->settings->tax_on_wallet ? ($this->request->amount * auth()->user()->isTaxable()->sum('percentage') / 100) : 0;
+        $taxesPayable = $this->settings->tax_on_wallet ? auth()->user()->taxesPayable() : null;
+
+        $amountFixed = number_format($this->request->amount + ($this->request->amount * $feePayPal / 100) + $centsPayPal + $taxes, 2, '.', '');
         $response = $gateway->purchase(array(
-            'amount'        => '4.000',
-            'currency'      => 'PLN',
-            'description'   => 'NNŻ . $description . ',
-            'transactionId' => '5',
-            'returnUrl'     => 'google.com',
-            'cancelUrl'     => 'facebook.com',
-            'notifyUrl'     => '/'
+            'amount'        => $amountFixed,
+            'currency'      => $this->settings->currency_code,
+            'description'   => "id=' . auth()->user()->id . '&amount=' . $this->request->amount . '&taxes=' . $taxesPayable . '",
+            // 'transactionId' => '5',
+            'returnUrl'     => route('paypal/add/funds/ipn'),
+            'cancelUrl'     => url('my/wallet')
         ))->send();
 
 
         //print_r( get_class_methods( $response ) );
         // Process response
-        // dd($response);
-        // if ($response->isSuccessful()) {
-        //     $transaction_id = $response->getTransactionReference();
-        //     // Kernel::log('paypal.log' , $transaction_id);
-        //     // return ['url' => $response->getRedirectUrl(), 'paypal' => true ];
-        //     return redirect($response->getRedirectUrl());
-        // } elseif ($response->isRedirect()) {
+        // dd($response->getRedirectUrl());
+        if ($response->isSuccessful()) {
+            $transaction_id = $response->getTransactionReference();
+            // Kernel::log('paypal.log' , $transaction_id);
+            // return ['url' => $response->getRedirectUrl(), 'paypal' => true ];
+            return redirect($response->getRedirectUrl());
+        } elseif ($response->isRedirect()) {
 
-        //     // Redirect to offsite payment gateway
-        //     $response->redirect();
-
-        // } else {
-
-        //     // Payment failed
-        //     echo $response->getMessage();
-        // }
-        if($response->isRedirect()){
+            // Redirect to offsite payment gateway
             $response->redirect();
-        }else{
-            return $response->getMessage();
+
+        } else {
+
+            // Payment failed
+            echo $response->getMessage();
         }
     }
     /**
@@ -774,6 +776,43 @@ class AddFundsController extends Controller
 
     }// End Method mercadoPagoProcess
 
+    public function success(Request $request)
+    {
+        // Once the transaction has been approved, we need to complete it.
+        if ($request->input('paymentId') && $request->input('PayerID'))
+        {
+            $transaction = $this->gateway->completePurchase(array(
+                'payer_id'             => $request->input('PayerID'),
+                'transactionReference' => $request->input('paymentId'),
+            ));
+            $response = $transaction->send();
+
+            if ($response->isSuccessful())
+            {
+                // The customer has successfully paid.
+                $data = $response->getData();
+                // Check outh POST variable and insert in DB
+                $verifiedTxnId = Deposits::where('txn_id', $txn_id)->first();
+
+                if (!isset($verifiedTxnId)) {
+
+                    // Insert Deposit
+                    $this->deposit($data['id'], $txn_id, $data['amount'], 'PayPal', $data['taxes']);
+
+                    //Add Funds to User
+                    User::find($data['id'])->increment('wallet', $data['amount']);
+
+                }// <--- Verified Txn ID
+
+                return "Payment is successful. Your transaction id is: ". $data['id'];
+            } else {
+                return $response->getMessage();
+            }
+        } else {
+            return 'Transaction is declined';
+        }
+    }
+
     public function coinPaymentsIPN(Request $request)
     {
         // Get Payment Gateway
@@ -1000,11 +1039,12 @@ class AddFundsController extends Controller
         if ($result["code"] == '201') {
             $url = $result["data"]["payment_url"];
 
-            return response()->json([
-                "success" => true,
-                "payment" => "CinetPay",
-                "data" => $result["data"]
-            ]);
+            // return response()->json([
+            //     "success" => true,
+            //     "payment" => "CinetPay",
+            //     "data" => $result["data"]
+            // ]);
+            return redirect($result["data"]["payment_url"]);
         } else {
             return response()->json([
                 "success" => false,
