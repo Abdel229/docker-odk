@@ -29,8 +29,10 @@
         "league/color-extractor": "^0.3.2",
         "league/flysystem-aws-s3-v3": "^1.0.29",
         "league/glide-laravel": "^1.0.0",
+        "league/omnipay": "^3.2",
         "mercadopago/dx-php": "2.4.5",
         "mollie/laravel-mollie": "^v2.19.0",
+        "omnipay/paypal": "^3.0",
         "pbmedia/laravel-ffmpeg": "^7.8.1",
         "razorpay/razorpay": "^2.8.2",
         "silviolleite/laravelpwa": "^2.0.3",
@@ -53,7 +55,10 @@
     "config": {
         "optimize-autoloader": true,
         "preferred-install": "dist",
-        "sort-packages": true
+        "sort-packages": true,
+        "allow-plugins": {
+            "php-http/discovery": true
+        }
     },
     "extra": {
         "laravel": {

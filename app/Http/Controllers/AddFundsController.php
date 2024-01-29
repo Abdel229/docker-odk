@@ -2,32 +2,35 @@
 
 namespace App\Http\Controllers;
 
-use App\Helper;
-use App\Models\AdminSettings;
-use App\Models\Deposits;
-use App\Models\PaymentGateways;
-use App\Models\User;
-use App\Notifications\AdminDepositPending;
 use Exception;
-use Fahim\PaypalIPN\PaypalIPNListener;
-use Illuminate\Contracts\Foundation\Application;
-use Illuminate\Contracts\View\Factory;
-use Illuminate\Contracts\View\View;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Notification;
-use Illuminate\Support\Facades\Validator;
-use KingFlamez\Rave\Facades\Rave as Flutterwave;
-use MercadoPago\Item;
-use MercadoPago\Preference;
+use App\Helper;
+use App\Models\User;
 use MercadoPago\SDK;
-use Mollie\Api\MollieApiClient;
+use Omnipay\Omnipay;
+use MercadoPago\Item;
 use Razorpay\Api\Api;
-use Stripe\StripeClient;
 use Yabacon\Paystack;
+use App\Console\Kernel;
+use App\Models\Deposits;
+use Stripe\StripeClient;
+use MercadoPago\Preference;
+use Illuminate\Http\Request;
+use App\Models\AdminSettings;
+use App\Models\PaymentGateways;
+use Mollie\Api\MollieApiClient;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Contracts\View\View;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Http\RedirectResponse;
+use Fahim\PaypalIPN\PaypalIPNListener;
+use Illuminate\Contracts\View\Factory;
+use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Validator;
+use App\Notifications\AdminDepositPending;
 use App\Services\cinetpay\CinetPayService;
+use Illuminate\Support\Facades\Notification;
+use Illuminate\Contracts\Foundation\Application;
+use KingFlamez\Rave\Facades\Rave as Flutterwave;
 
 class AddFundsController extends Controller
 {
@@ -100,7 +103,8 @@ class AddFundsController extends Controller
 
             switch ($this->request->payment_gateway) {
                 case 'PayPal':
-                    return $this->sendPayPal();
+                    // return $this->sendPayPal();
+                    return $this->myOmniPaypal();
                 case 'Stripe':
                     return $this->sendStripe();
                 case 'Bank':
@@ -184,6 +188,42 @@ class AddFundsController extends Controller
         ]);
     } // sendPayPal
 
+    protected function myOmniPaypal(){
+        $gateway = Omnipay::create('PayPal_Rest');
+        $gateway->initialize(array(
+            'clientId' => 'Ae0-Tf384ndHUzGy7-_2d_ValPdALN0gBfU9Rb00AYGTVN3fmadPTmrGsOcCfkDf72unfNRfNZt3azuP',
+            'secret'   => 'EPYbZHi8XRq1wqf2E8Us4CY-35jtWGbcjPXrbRxTOr68bitt7gOCzpioU_gmHqEMQHEAdDmkMRFQDhoB',
+            'testMode' => true, // Or false when you are ready for live transactions
+        ));
+        $response = $gateway->purchase(array(
+            'amount'        => '4.000',
+            'currency'      => 'PLN',
+            'description'   => 'NNŻ . $description . ',
+            'transactionId' => '5',
+            'returnUrl'     => 'google.com',
+            'cancelUrl'     => 'facebook.com',
+            'notifyUrl'     => '/'
+        ))->send();
+
+
+        //print_r( get_class_methods( $response ) );
+        // Process response
+        if ($response->isSuccessful()) {
+            $transaction_id = $response->getTransactionReference();
+            // Kernel::log('paypal.log' , $transaction_id);
+            // return ['url' => $response->getRedirectUrl(), 'paypal' => true ];
+            return redirect($response->getRedirectUrl());
+        } elseif ($response->isRedirect()) {
+
+            // Redirect to offsite payment gateway
+            $response->redirect();
+
+        } else {
+
+            // Payment failed
+            echo $response->getMessage();
+        }
+    }
     /**
      *  Add funds Stripe
      *
