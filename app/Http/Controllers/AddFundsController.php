@@ -208,20 +208,26 @@ class AddFundsController extends Controller
 
         //print_r( get_class_methods( $response ) );
         // Process response
-        if ($response->isSuccessful()) {
-            $transaction_id = $response->getTransactionReference();
-            // Kernel::log('paypal.log' , $transaction_id);
-            // return ['url' => $response->getRedirectUrl(), 'paypal' => true ];
-            return redirect($response->getRedirectUrl());
-        } elseif ($response->isRedirect()) {
+        // dd($response);
+        // if ($response->isSuccessful()) {
+        //     $transaction_id = $response->getTransactionReference();
+        //     // Kernel::log('paypal.log' , $transaction_id);
+        //     // return ['url' => $response->getRedirectUrl(), 'paypal' => true ];
+        //     return redirect($response->getRedirectUrl());
+        // } elseif ($response->isRedirect()) {
 
-            // Redirect to offsite payment gateway
+        //     // Redirect to offsite payment gateway
+        //     $response->redirect();
+
+        // } else {
+
+        //     // Payment failed
+        //     echo $response->getMessage();
+        // }
+        if($response->isRedirect()){
             $response->redirect();
-
-        } else {
-
-            // Payment failed
-            echo $response->getMessage();
+        }else{
+            return $response->getMessage();
         }
     }
     /**
