@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Helper;
 use App\Models\User;
+use Omnipay\Omnipay;
 use App\Models\Products;
 use App\Models\TaxRates;
 use App\Models\Purchases;
@@ -734,57 +735,40 @@ public function updates()
         }
         if($this->request->payment_gateway_ppv == "40"){
             try{
-                $data = [];
-                $data["customer_name"] = auth()->user()->name;
-                $data["customer_surname"] = auth()->user()->username;
-                $data["description"] = "Achat sdk";
-                $data["amount"] = $item->product_promo!=0?$item->price-($item->product_promo*$item->price/100):$item->price;
-                $data["type_operation"] = 4;
-                $data["id_product"] = $this->request->id;
-                $data["id_update"] = null;
-                $data["description_custom_content"] = ''.json_encode($this->request->description_custom_content).'';
-                $data["delivery_status"] = $item->type == 'digital' ? 'delivered' : 'pending';
-                $data["id_subscribe"] = null;
-                $data["currency"] = "XOF";
+                $payment = PaymentGateways::whereId(1)->whereName('PayPal')->firstOrFail();
+                $gateway = Omnipay::create('PayPal_Rest');
+                $gateway->initialize(array(
+                    'clientId' => env('PAYPAL_SANDBOX_CLIENT_ID'),
+                    'secret'   => env('PAYPAL_SANDBOX_SECRET'),
+                    'testMode' => $payment->sandbox?true:false, // Or false when you are ready for live transactions
+                ));
 
+
+                $response = $gateway->purchase(array(
+                    'amount'        => $item->product_promo!=0?$item->price-($item->product_promo*$item->price/100):$item->price,
+                    'currency'      => "EUR",
+                    'description'   => "Achat sdk",
+                    'transactionId' => $this->request->id,
+                    'returnUrl'     => url('paypal/add/funds/ipn'),
+                    'cancelUrl'     => url('my/wallet')
+                ))->send();
                // Get Payment Gateway
-        $payment = PaymentGateways::whereId(1)->whereName('PayPal')->firstOrFail();
 
-        // Verify environment Sandbox or Live
-        if ($payment->sandbox == 'true') {
-            $action = "https://ipnpb.sandbox.paypal.com/cgi-bin/webscr";
-        } else {
-            $action = "https://ipnpb.paypal.com/cgi-bin/webscr";
-        }
+               if ($response->isSuccessful()) {
+                $transaction_id = $response->getTransactionReference();
+                return response()->json([
+                    'success'=>true,
+                    'payment'=>"PayPal",
+                    'payment_url'=>$response->getRedirectUrl()
+                ]);
+            } elseif ($response->isRedirect()) {
+                // Redirect to offsite payment gateway
+                $response->redirect();
 
-        $urlSuccess = route('paymentProcess');
-        $urlCancel = url('my/wallet');
-
-        $urlPaypalIPN = url('paypal/add/funds/ipn');
-
-        $feePayPal = $payment->fee;
-        $centsPayPal = $payment->fee_cents;
-
-        $taxes = $this->settings->tax_on_wallet ? ($data["amount"] * auth()->user()->isTaxable()->sum('percentage') / 100) : 0;
-        $taxesPayable = $this->settings->tax_on_wallet ? auth()->user()->taxesPayable() : null;
-
-        $amountFixed = number_format($data["amount"] + ($data["amount"] * $feePayPal / 100) + $centsPayPal + $taxes, 2, '.', '');
-        return response()->json([
-            'success' => true,
-            'insertBody' => '<form id="form_pp" name="_xclick" action="' . $action . '" method="post"  style="display:none">
-                  <input type="hidden" name="cmd" value="_xclick">
-                  <input type="hidden" name="return" value="' . $urlSuccess . '">
-                  <input type="hidden" name="cancel_return"   value="' . $urlCancel . '">
-                  <input type="hidden" name="notify_url" value="' . $urlPaypalIPN . '">
-                  <input type="hidden" name="currency_code" value="' . $this->settings->currency_code . '">
-                  <input type="hidden" name="amount" id="amount" value="' . $amountFixed . '">
-                  <input type="hidden" name="no_shipping" value="1">
-                  <input type="hidden" name="custom" value="id=' . auth()->user()->id . '&amount=' . $data["amount"] . '&taxes=' . $taxesPayable . '">
-                  <input type="hidden" name="item_name" value="' . __('general.add_funds') . ' @' . auth()->user()->username . '">
-                  <input type="hidden" name="business" value="' . $payment->email . '">
-                  <input type="submit">
-                  </form> <script type="text/javascript">document._xclick.submit();</script>',
-        ]);
+            } else {
+                // Payment failed
+                echo $response->getMessage();
+            }
             }catch (\Throwable $th) {
                 return response()->json([
                   'success' => false,

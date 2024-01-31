@@ -68,15 +68,22 @@ $("#fileBankTransfer").on('change', function() {
 	 element.find('i').addClass('spinner-border spinner-border-sm align-middle mr-1');
 
 	 (function(){
+        console.log('anhanh')
 			$('#formAddFunds').ajaxForm({
 			dataType : 'json',
 			success:  function(result) {
-
+                console.log(result)
+                console.log(result.payment === "PayPal")
 				// success
 				if (result.success === true && result.payment === "CinetPay") {
 					const data = result.data
 					window.location.href = data.payment_url
 				}
+                if(result.success === true && result.payment === "PayPal") {
+                    // console.log('getting here');
+                    // window.open(data.payment_url, '_blank');
+                    window.location.href = result.payment_url
+                }
 				if (result.success && result.instantPayment) {
 						window.location.reload();
 				}

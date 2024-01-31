@@ -192,10 +192,11 @@ class AddFundsController extends Controller
         $payment = PaymentGateways::whereId(1)->whereName('PayPal')->firstOrFail();
         $gateway = Omnipay::create('PayPal_Rest');
         $gateway->initialize(array(
-            'clientId' => 'Ae0-Tf384ndHUzGy7-_2d_ValPdALN0gBfU9Rb00AYGTVN3fmadPTmrGsOcCfkDf72unfNRfNZt3azuP',
-            'secret'   => 'EPYbZHi8XRq1wqf2E8Us4CY-35jtWGbcjPXrbRxTOr68bitt7gOCzpioU_gmHqEMQHEAdDmkMRFQDhoB',
+            'clientId' => env('PAYPAL_SANDBOX_CLIENT_ID'),
+            'secret'   => env('PAYPAL_SANDBOX_SECRET'),
             'testMode' => $payment->sandbox?true:false, // Or false when you are ready for live transactions
         ));
+
         $feePayPal = $payment->fee;
         $centsPayPal = $payment->fee_cents;
 
@@ -203,15 +204,15 @@ class AddFundsController extends Controller
         $taxesPayable = $this->settings->tax_on_wallet ? auth()->user()->taxesPayable() : null;
 
         $amountFixed = number_format($this->request->amount + ($this->request->amount * $feePayPal / 100) + $centsPayPal + $taxes, 2, '.', '');
+
         $response = $gateway->purchase(array(
-            'amount'        => $amountFixed,
-            'currency'      => $this->settings->currency_code,
+            'amount'        => round($amountFixed,2),
+            'currency'      => "EUR",
             'description'   => "id=' . auth()->user()->id . '&amount=' . $this->request->amount . '&taxes=' . $taxesPayable . '",
             // 'transactionId' => '5',
-            'returnUrl'     => route('paypal/add/funds/ipn'),
+            'returnUrl'     => url('paypal/add/funds/ipn'),
             'cancelUrl'     => url('my/wallet')
         ))->send();
-
 
         //print_r( get_class_methods( $response ) );
         // Process response
@@ -220,9 +221,13 @@ class AddFundsController extends Controller
             $transaction_id = $response->getTransactionReference();
             // Kernel::log('paypal.log' , $transaction_id);
             // return ['url' => $response->getRedirectUrl(), 'paypal' => true ];
-            return redirect($response->getRedirectUrl());
+            // return redirect($response->getRedirectUrl());
+            return response()->json([
+                'success'=>true,
+                'payment'=>"PayPal",
+                'payment_url'=>$response->getRedirectUrl()
+            ]);
         } elseif ($response->isRedirect()) {
-
             // Redirect to offsite payment gateway
             $response->redirect();
 
@@ -1039,12 +1044,12 @@ class AddFundsController extends Controller
         if ($result["code"] == '201') {
             $url = $result["data"]["payment_url"];
 
-            // return response()->json([
-            //     "success" => true,
-            //     "payment" => "CinetPay",
-            //     "data" => $result["data"]
-            // ]);
-            return redirect($result["data"]["payment_url"]);
+            return response()->json([
+                "success" => true,
+                "payment" => "CinetPay",
+                "data" => $result["data"]
+            ]);
+            // return redirect($result["data"]["payment_url"]);
         } else {
             return response()->json([
                 "success" => false,

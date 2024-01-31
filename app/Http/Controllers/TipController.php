@@ -5,22 +5,23 @@ namespace App\Http\Controllers;
 use Mail;
 use App\Helper;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Http\Request;
 use App\Models\User;
-use App\Models\AdminSettings;
+use Omnipay\Omnipay;
+use Yabacon\Paystack;
+use App\Models\Messages;
 use App\Models\LiveComments;
+use App\Models\Transactions;
+use Illuminate\Http\Request;
+use App\Models\AdminSettings;
+use App\Models\Conversations;
+use App\Models\Notifications;
+use App\Models\CinepayPayment;
+use App\Models\PaymentGateways;
+use Illuminate\Support\Facades\Auth;
 use Fahim\PaypalIPN\PaypalIPNListener;
 use Illuminate\Support\Facades\Validator;
-use App\Models\PaymentGateways;
-use App\Models\Transactions;
-use Laravel\Cashier\Exceptions\IncompletePayment;
-use App\Models\Notifications;
-use App\Models\Conversations;
-use App\Models\Messages;
-use Yabacon\Paystack;
 use App\Services\cinetpay\CinetPayService;
-use App\Models\CinepayPayment;
+use Laravel\Cashier\Exceptions\IncompletePayment;
 
 class TipController extends Controller
 {
@@ -265,18 +266,17 @@ class TipController extends Controller
 	 */
   protected function sendTipPayPal()
   {
+    //TODO: le payment avec paypal retourne: The credit card number is required
     // Get Payment Gateway
     $payment = PaymentGateways::whereId(1)->whereName('PayPal')->firstOrFail();
-
+    $gateway = Omnipay::create('PayPal_Rest');
+    $gateway->initialize(array(
+        'clientId' => env('PAYPAL_SANDBOX_CLIENT_ID'),
+        'secret'   => env('PAYPAL_SANDBOX_SECRET'),
+        'testMode' => $payment->sandbox?true:false, // Or false when you are ready for live transactions
+    ));
     // Find user
     $user = User::find($this->request->id);
-
-    // Verify environment Sandbox or Live
-    if ($payment->sandbox == 'true') {
-      $action = "https://www.sandbox.paypal.com/cgi-bin/webscr";
-      } else {
-      $action = "https://www.paypal.com/cgi-bin/webscr";
-      }
 
       if ($this->request->isMessage) {
         $urlSuccess = url('paypal/msg/tip/redirect', $this->request->id);
@@ -287,25 +287,50 @@ class TipController extends Controller
         $urlCancel   = url('paypal/tip/cancel', $user->username);
         $isMessage = false;
       }
+      $card=[
+        "item_name"=>"'.__('general.tip_for').' @'.$user->username.'",
+        "custorm"=>"id='.$user->id.'&amount='.$this->request->amount.'&sender='.Auth::user()->id.'&m='.$isMessage.'&taxes='.auth()->user()->taxesPayable().'",
+      ];
+      $response = $gateway->purchase(array(
+        'amount'        => Helper::amountGross($this->request->amount),
+        'currency'      => "EUR",
+        'description'   => "Achat sdk",
+        'transactionId' => $this->request->id,
+        'returnUrl'     => $urlSuccess,
+        'cancelUrl'     => $urlCancel,
+        'card'=>$card
+    ))->send();
+    if ($response->isSuccessful()) {
+        $transaction_id = $response->getTransactionReference();
+        return response()->json([
+            'success'=>true,
+            'payment'=>"PayPal",
+            'payment_url'=>$response->getRedirectUrl()
+        ]);
+    } elseif ($response->isRedirect()) {
+        // Redirect to offsite payment gateway
+        $response->redirect();
 
-      $urlPaypalIPN = url('paypal/tip/ipn');
-
-      return response()->json([
-                  'success' => true,
-                  'insertBody' => '<form id="form_pp" name="_xclick" action="'.$action.'" method="post"  style="display:none">
-                  <input type="hidden" name="cmd" value="_xclick">
-                  <input type="hidden" name="return" value="'.$urlSuccess.'">
-                  <input type="hidden" name="cancel_return"   value="'.$urlCancel.'">
-                  <input type="hidden" name="notify_url" value="'.$urlPaypalIPN.'">
-                  <input type="hidden" name="currency_code" value="'.$this->settings->currency_code.'">
-                  <input type="hidden" name="amount" id="amount" value="'.Helper::amountGross($this->request->amount).'">
-                  <input type="hidden" name="no_shipping" value="1">
-                  <input type="hidden" name="custom" value="id='.$user->id.'&amount='.$this->request->amount.'&sender='.Auth::user()->id.'&m='.$isMessage.'&taxes='.auth()->user()->taxesPayable().'">
-                  <input type="hidden" name="item_name" value="'.__('general.tip_for').' @'.$user->username.'">
-                  <input type="hidden" name="business" value="'.$payment->email.'">
-                  <input type="submit">
-                  </form> <script type="text/javascript">document._xclick.submit();</script>',
-              ]);
+    } else {
+        // Payment failed
+        echo $response->getMessage();
+    }
+    //   return response()->json([
+    //               'success' => true,
+    //               'insertBody' => '<form id="form_pp" name="_xclick" action="'.$action.'" method="post"  style="display:none">
+    //               <input type="hidden" name="cmd" value="_xclick">
+    //               <input type="hidden" name="return" value="'.$urlSuccess.'">
+    //               <input type="hidden" name="cancel_return"   value="'.$urlCancel.'">
+    //               <input type="hidden" name="notify_url" value="'.$urlPaypalIPN.'">
+    //               <input type="hidden" name="currency_code" value="'.$this->settings->currency_code.'">
+    //               <input type="hidden" name="amount" id="amount" value="'.Helper::amountGross($this->request->amount).'">
+    //               <input type="hidden" name="no_shipping" value="1">
+    //               <input type="hidden" name="custom" value="id='.$user->id.'&amount='.$this->request->amount.'&sender='.Auth::user()->id.'&m='.$isMessage.'&taxes='.auth()->user()->taxesPayable().'">
+    //               <input type="hidden" name="item_name" value="'.__('general.tip_for').' @'.$user->username.'">
+    //               <input type="hidden" name="business" value="'.$payment->email.'">
+    //               <input type="submit">
+    //               </form> <script type="text/javascript">document._xclick.submit();</script>',
+    //           ]);
       } // sendTipPayPal
 
       /**

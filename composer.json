@@ -44,13 +44,15 @@
         "yasserbelhimer/agora-access-token-generator": "^1.0"
     },
     "require-dev": {
+        "barryvdh/laravel-debugbar": "^3.7",
         "facade/ignition": "^2.17.5",
+        "fahim/laravel5-paypal-ipn": "v1.0.0",
         "fakerphp/faker": "^v1.19.0",
+        "kitloong/laravel-migrations-generator": "^6.11",
         "laravel/sail": "^v1.13.6",
         "mockery/mockery": "^1.5.0",
         "nunomaduro/collision": "^v5.11.0",
-        "phpunit/phpunit": "^9.5.18",
-        "fahim/laravel5-paypal-ipn": "v1.0.0"
+        "phpunit/phpunit": "^9.5.18"
     },
     "config": {
         "optimize-autoloader": true,

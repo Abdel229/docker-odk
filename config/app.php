@@ -182,7 +182,7 @@ return [
         App\Providers\RouteServiceProvider::class,
         App\Providers\ViewServiceProvider::class,
         ProtoneMedia\LaravelFFMpeg\Support\ServiceProvider::class,
-
+        Barryvdh\Debugbar\ServiceProvider::class,
     ],
 
     /*
@@ -257,7 +257,8 @@ return [
         'Transactions' => App\Models\Transactions::class,
         'FFMpeg' => ProtoneMedia\LaravelFFMpeg\Support\FFMpeg::class,
         'Rave' => KingFlamez\Rave\Facades\Rave::class,
-        'GoogleTranslate' => \Stichoza\GoogleTranslate\GoogleTranslate::class
+        'GoogleTranslate' => \Stichoza\GoogleTranslate\GoogleTranslate::class,
+        'Debugbar' => Barryvdh\Debugbar\Facades\Debugbar::class,
 
     ],
 

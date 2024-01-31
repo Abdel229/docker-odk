@@ -1147,7 +1147,10 @@ class AdminController extends Controller
         ]);
 
 		$data->fill($input)->save();
-
+		if($data->name=='PayPal'){
+			Helper::envUpdate('PAYPAL_SANDBOX_CLIENT_ID',$input['key']);
+			Helper::envUpdate('PAYPAL_SANDBOX_SECRET',$input['key_secret']);
+		}
 		// Set Keys on .env file
 		if ($data->name == 'Stripe') {
 			Helper::envUpdate('STRIPE_KEY', $input['key']);

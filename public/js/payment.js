@@ -41,7 +41,6 @@
                 $("#formSubscription").ajaxForm({
                     dataType: 'json',
                     success: function (result) {
-
                         // success
                         if (result.success == true && result.insertBody) {
 
@@ -60,7 +59,11 @@
                         } else if (result.success === true && result.payment === "CinetPay") {
                             const data = result.data
                             window.location.href = data.payment_url
-                        }else if(result.success == true && result.url) {
+                        }else if(result.success === true && result.payment==="PayPal"){
+                            window.location.href = data.payment_url
+                    
+                        }
+                        else if(result.success == true && result.url) {
                             window.location.href = result.url;
                         }else {
 

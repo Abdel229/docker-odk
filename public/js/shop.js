@@ -36,7 +36,10 @@
 			} else if (result.success && result.url) {
 				 window.location.href = result.url;
 
-			} else if (result.success && result.buyCustomContent) {
+			}else if(result.success===true && result.payment==="PayPal"){
+				 window.location.href = result.payment_url;
+            }
+             else if (result.success && result.buyCustomContent) {
 
 				 $('#buyNowForm').modal('hide');
 

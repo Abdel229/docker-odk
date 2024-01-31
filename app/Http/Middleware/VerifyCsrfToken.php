@@ -20,6 +20,7 @@ class VerifyCsrfToken extends Middleware
       '/cinetpay/*',
       '/cinetpay/return',
       '/signup',
-      'add/funds'
+      'add/funds',
+      'send/tip'
     ];
 }

@@ -2,19 +2,20 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Validator;
+use Mail;
+use App\Helper;
+use Carbon\Carbon;
+use App\Models\User;
+use Omnipay\Omnipay;
+use App\Models\Transactions;
 use Illuminate\Http\Request;
 use App\Models\AdminSettings;
-use App\Models\Subscriptions;
 use App\Models\Notifications;
-use App\Models\User;
-use Fahim\PaypalIPN\PaypalIPNListener;
-use App\Helper;
-use Mail;
-use Carbon\Carbon;
+use App\Models\Subscriptions;
 use App\Models\PaymentGateways;
-use App\Models\Transactions;
+use Illuminate\Support\Facades\Auth;
+use Fahim\PaypalIPN\PaypalIPNListener;
+use Illuminate\Support\Facades\Validator;
 use Srmklive\PayPal\Services\PayPal as PayPalClient;
 
 class PayPalController extends Controller
@@ -51,14 +52,14 @@ class PayPalController extends Controller
          ->firstOrFail();
 
       // Get Payment Gateway
-      $payment = PaymentGateways::findOrFail($this->request->payment_gateway);
+    //   $payment = PaymentGateways::findOrFail($this->request->payment_gateway);
 
-      // Verify environment Sandbox or Live
-      if ($payment->sandbox == 'true') {
-				$action = "https://www.sandbox.paypal.com/cgi-bin/webscr";
-				} else {
-				$action = "https://www.paypal.com/cgi-bin/webscr";
-				}
+      $gateway = Omnipay::create('PayPal_Rest');
+      $gateway->initialize(array(
+          'clientId' => env('PAYPAL_SANDBOX_CLIENT_ID'),
+          'secret'   => env('PAYPAL_SANDBOX_SECRET'),
+          'testMode' => $payment->sandbox?true:false, // Or false when you are ready for live transactions
+      ));
 
         $urlSuccess = url('buy/subscription/success', $user->username).'?paypal=1';
   			$urlCancel   = url('buy/subscription/cancel', $user->username);
@@ -90,26 +91,65 @@ class PayPalController extends Controller
             $interval_count = 1;
             break;
         }
+        $response = $gateway->purchase(array(
+            // 'amount' => '4000',
+            'currency' => "EUR",
+            // 'description' => "ok",
+            // 'transactionId' => '5',
+            'returnUrl' => $urlSuccess,
+            'cancelUrl' =>$urlCancel,
+            'items' => [
+                [
+                    'name' => 'Produit 1',
+                    'description' => 'Description du produit 1',
+                    'quantity' => 1,
+                    'price' => 100,
+                ],
+            ],
+            'custom' => "id='.$this->request->id.'&amount='.$plan->price.'&subscriber='.auth()->id().'&name='.auth()->user()->name.'&plan='.$plan->name.'&taxes='.auth()->user()->taxesPayable().'",
+            'customizationFields' => [
+                'a3' => Helper::amountGross($plan->price),
+                'p3' => $interval_count,
+                't3'=>$interval,
+                "src" => "1",
+                "rm" => "2"
+            ],
+        ));
+        if ($response->isSuccessful()) {
+            $transaction_id = $response->getTransactionReference();
+            return response()->json([
+                'success'=>true,
+                'payment'=>"PayPal",
+                'payment_url'=>$response->getRedirectUrl()
+            ]);
+        } elseif ($response->isRedirect()) {
+            // Redirect to offsite payment gateway
+            $response->redirect();
 
-  			return response()->json([
-  					        'success' => true,
-  					        'insertBody' => '<form id="form_pp" name="_xclick" action="'.$action.'" method="post"  style="display:none">
-                    <input type="hidden" name="cmd" value="_xclick-subscriptions"/>
-                    <input type="hidden" name="return" value="'.$urlSuccess.'">
-  					        <input type="hidden" name="cancel_return"   value="'.$urlCancel.'">
-              			<input type="hidden" name="notify_url" value="'.$urlPaypalIPN.'">
-                    <input type="hidden" name="no_shipping" value="1">
-                    <input type="hidden" name="currency_code" value="'.$this->settings->currency_code.'">
-              			<input type="hidden" name="item_name" value="'.trans('general.subscription_for').' @'.$user->username.'">
-                    <input type="hidden" name="custom" value="id='.$this->request->id.'&amount='.$plan->price.'&subscriber='.auth()->id().'&name='.auth()->user()->name.'&plan='.$plan->name.'&taxes='.auth()->user()->taxesPayable().'">
-              			<input type="hidden" name="a3" value="'.Helper::amountGross($plan->price).'"/>
-              			<input type="hidden" name="p3" value="'.$interval_count.'"/>
-              			<input type="hidden" name="t3" value="'.$interval.'"/>
-              			<input type="hidden" name="src" value="1"/>
-              			<input type="hidden" name="rm" value="2"/>
-                    <input type="hidden" name="business" value="'.$payment->email.'">
-              			</form> <script type="text/javascript">document._xclick.submit();</script>',
-  					    ]);
+        } else {
+
+            // Payment failed
+            echo $response->getMessage();
+        }
+  			// return response()->json([
+  			// 		        'success' => true,
+  			// 		        'insertBody' => '<form id="form_pp" name="_xclick" action="'.$action.'" method="post"  style="display:none">
+            //         <input type="hidden" name="cmd" value="_xclick-subscriptions"/>
+            //         <input type="hidden" name="return" value="'.$urlSuccess.'">
+  			// 		        <input type="hidden" name="cancel_return"   value="'.$urlCancel.'">
+            //   			<input type="hidden" name="notify_url" value="'.$urlPaypalIPN.'">
+            //         <input type="hidden" name="no_shipping" value="1">
+            //         <input type="hidden" name="currency_code" value="'.$this->settings->currency_code.'">
+            //   			<input type="hidden" name="item_name" value="'.trans('general.subscription_for').' @'.$user->username.'">
+            //         <input type="hidden" name="custom" value="id='.$this->request->id.'&amount='.$plan->price.'&subscriber='.auth()->id().'&name='.auth()->user()->name.'&plan='.$plan->name.'&taxes='.auth()->user()->taxesPayable().'">
+            //   			<input type="hidden" name="a3" value="'.Helper::amountGross($plan->price).'"/>
+            //   			<input type="hidden" name="p3" value="'.$interval_count.'"/>
+            //   			<input type="hidden" name="t3" value="'.$interval.'"/>
+            //   			<input type="hidden" name="src" value="1"/>
+            //   			<input type="hidden" name="rm" value="2"/>
+            //         <input type="hidden" name="business" value="'.$payment->email.'">
+            //   			</form> <script type="text/javascript">document._xclick.submit();</script>',
+  			// 		    ]);
     }
 
     /**
